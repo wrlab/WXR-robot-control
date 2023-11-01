@@ -1,4 +1,4 @@
-# WXR MRO
+# WXR Robot Control
 
 - KUKA
 - UR5
