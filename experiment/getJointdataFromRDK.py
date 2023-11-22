@@ -9,7 +9,7 @@ if __name__ == "__main__":
 
     joint_data = np.zeros(shape=(0, 6), dtype=np.float32)
     start_time = -1
-    fps = 60
+    fps = 120
 
     try:
         while True:
@@ -32,5 +32,5 @@ if __name__ == "__main__":
         print(joint_data)
         print(len(joint_data))
 
-    np.savetxt("sample-animation.txt", joint_data, fmt="%.12f")
+    np.savetxt("sample-animation-2.txt", joint_data, fmt="%.12f")
     print("end")
