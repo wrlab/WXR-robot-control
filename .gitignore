@@ -5,6 +5,9 @@ __pycache__
 # 3D 모델링 관련
 *.obj
 *.step
+*.gltf
+*.bin
+*.blend*
 
 # RoboDK 관련
 *.robot
