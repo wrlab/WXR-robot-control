@@ -1,0 +1,3 @@
+[submodule "wxr-server"]
+	path = wxr-server
+	url = https://github.com/wrlab/WXR-Platform-Server
