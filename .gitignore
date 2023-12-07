@@ -15,5 +15,6 @@ __pycache__
 *.script
 
 # js관련
-
 node_modules
+
+experiment
