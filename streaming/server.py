@@ -1,12 +1,13 @@
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.websockets import WebSocketDisconnect
+from collections import defaultdict
 
-import asyncio
+import asyncio, ast
 import rtde.rtde as rtde
 import rtde.rtde_config as rtde_config
 import math
 import json
+import uvicorn
 
 
 app = FastAPI()
@@ -28,39 +29,98 @@ app.add_middleware(
 )
 
 
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections = []
+
+    async def connect(self, websocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    async def broadcast(self, message):
+        for connection in self.active_connections:
+            await connection.send_text(message)
+
+    async def message(self, websocket, message):
+        await websocket.send_text(message)
+
+    def disconnect(self, websocket):
+        self.active_connections.remove(websocket)
+
+
+manager = ConnectionManager()
+
+
 @app.get("/{workspace_id}")
 async def main(workspace_id: int):
-    global conn
+    global conn, conf, setp
     print("initialize: ", workspace_id)
 
     conn = rtde.RTDE(HOST, PORT)
     conn.connect()
+    conf = rtde_config.ConfigFile("record_configuration.xml")
+
+    state_names, state_types = conf.get_recipe("state")
+    setp_names, setp_types = conf.get_recipe("setp")
+
+    setp = conn.send_input_setup(setp_names, setp_types)
+
+    if not conn.send_output_setup(state_names, state_types, frequency=FREQ):
+        print("Unable to configure output")
+        exit()
+
+    if not conn.send_start():
+        print("Unable to start synchronization")
+        exit()
 
     return {"message": "Hello World"}
 
 
+@app.get("/{workspace_id}/move")
+async def move(workspace_id: int, target_tcp: str, target_rot: str):
+    global conn, conf, setp
+
+    state = conn.receive()
+
+    target_tcp = ast.literal_eval(target_tcp)
+    target_rot = ast.literal_eval(target_rot)
+
+    for idx, e in enumerate(target_tcp):
+        setp.__dict__[f"input_double_register_{idx}"] = e
+
+    for idx, e in enumerate(target_rot, 3):
+        setp.__dict__[f"input_double_register_{idx}"] = e * math.pi / 180
+
+    conn.send(setp)
+
+    return {
+        "joints": [q * 180 / math.pi for q in state.actual_q],
+        "workspace_id": workspace_id,
+        "target_tcp": target_tcp,
+        "target_rot": target_rot,
+    }
+
+
 @app.websocket("/stream/{workspace_id}")
 async def stream(websocket: WebSocket, workspace_id: int):
-    global conn
-    await websocket.accept()
+    global conn, conf
+    await manager.connect(websocket)
 
-    conf = rtde_config.ConfigFile("record_configuration.xml")
-    output_names, output_types = conf.get_recipe("out")
+    keep_running = True
 
     try:
-        while True:
-            if not conn.send_output_setup(output_names, output_types, frequency=FREQ):
-                print("Unable to configure output")
-                exit()
-
-            if not conn.send_start():
-                print("Unable to start synchronization")
-                exit()
+        while keep_running:
+            if data := await websocket.receive_text():
+                data = json.loads(data)
+                x, y, z = (
+                    data["pos"].values() if data.get("pos") else (None, None, None)
+                )
 
             state = conn.receive()
             joints = state.actual_q
 
-            await websocket.send_text(
+            await manager.message(
+                websocket,
                 json.dumps(
                     {
                         "len": len(joints),
@@ -72,7 +132,7 @@ async def stream(websocket: WebSocket, workspace_id: int):
                         "q5": joints[4] * 180 / math.pi,
                         "q6": joints[5] * 180 / math.pi,
                     }
-                )
+                ),
             )
 
     except rtde.RTDEException:
@@ -81,5 +141,10 @@ async def stream(websocket: WebSocket, workspace_id: int):
 
     except WebSocketDisconnect:
         conn.send_pause()
+        keep_running = False
+        manager.disconnect(websocket)
         print("Connection closed from", workspace_id)
-        await websocket.close()
+
+
+if __name__ == "__main__":
+    uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True, workers=2)
