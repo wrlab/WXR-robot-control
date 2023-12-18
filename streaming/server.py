@@ -9,6 +9,8 @@ import math
 import json
 import uvicorn
 
+import logging
+
 
 app = FastAPI()
 connected = set()
@@ -101,6 +103,51 @@ async def move(workspace_id: int, target_tcp: str, target_rot: str):
     }
 
 
+async def get_pos(websocket):
+    global conn, conf, setp
+    data = await websocket.receive_text()
+
+    if "pos" in data:
+        data = json.loads(data)
+
+        x, y, z = data["pos"].values()
+        u, v, w, order = data["rot"].values()
+        u, v, w = [0, -180, 0]
+
+        if x is None or y is None or z is None:
+            return
+
+        setp.input_double_register_0 = -x
+        setp.input_double_register_1 = z
+        setp.input_double_register_2 = y
+        setp.input_double_register_3 = u * math.pi / 180
+        setp.input_double_register_4 = v * math.pi / 180
+        setp.input_double_register_5 = w * math.pi / 180
+
+        conn.send(setp)
+
+
+async def send_joints(websocket, conn):
+    state = conn.receive()
+    joints = state.actual_q
+
+    await manager.message(
+        websocket,
+        json.dumps(
+            {
+                "len": len(joints),
+                "timestamp": state.timestamp,
+                "q1": joints[0] * 180 / math.pi,
+                "q2": joints[1] * 180 / math.pi,
+                "q3": joints[2] * 180 / math.pi,
+                "q4": joints[3] * 180 / math.pi,
+                "q5": joints[4] * 180 / math.pi,
+                "q6": joints[5] * 180 / math.pi,
+            }
+        ),
+    )
+
+
 @app.websocket("/stream/{workspace_id}")
 async def stream(websocket: WebSocket, workspace_id: int):
     global conn, conf
@@ -108,32 +155,14 @@ async def stream(websocket: WebSocket, workspace_id: int):
 
     keep_running = True
 
+    initial_state = await websocket.receive_text()
+
+    print(initial_state)
+
     try:
         while keep_running:
-            if data := await websocket.receive_text():
-                data = json.loads(data)
-                x, y, z = (
-                    data["pos"].values() if data.get("pos") else (None, None, None)
-                )
-
-            state = conn.receive()
-            joints = state.actual_q
-
-            await manager.message(
-                websocket,
-                json.dumps(
-                    {
-                        "len": len(joints),
-                        "timestamp": state.timestamp,
-                        "q1": joints[0] * 180 / math.pi,
-                        "q2": joints[1] * 180 / math.pi,
-                        "q3": joints[2] * 180 / math.pi,
-                        "q4": joints[3] * 180 / math.pi,
-                        "q5": joints[4] * 180 / math.pi,
-                        "q6": joints[5] * 180 / math.pi,
-                    }
-                ),
-            )
+            await get_pos(websocket)
+            await send_joints(websocket, conn)
 
     except rtde.RTDEException:
         conn.send_pause()
