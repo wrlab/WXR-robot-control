@@ -58,6 +58,7 @@ for src_file_path in src_file_paths:
             values = GetValues(line)
             values_str = str(values)
 
+
             # Increase the counter
             count = count + 1
 
@@ -74,6 +75,7 @@ for src_file_path in src_file_paths:
 
                 # 턴테이블 불러오기 및 회전 적용
                 turntable = RDK.Item('2DOF Turn-table')
+                #RDK.ShowMessage(values_str, True)
                 turntable_joints = [values[6], values[7]]
                 turntable.setJoints(turntable_joints)
                 #RDK.ShowMessage('Turn-table has changed!', True)

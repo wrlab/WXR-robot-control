@@ -1,5 +1,6 @@
 from robodk.robomath import *
 import robodk.robolink as robolink
+import timeit
 
 # RoboDK API와의 연결 초기화
 RDK = robolink.Robolink()
@@ -24,7 +25,7 @@ target_orientation = [-0.16, 0.00, 87.156]
 target_list = [1533.696, 36.698, 691.154, -0.16, 0.00, 87.156]
 # rotx, y, z를 이용하기 위해서 target_orientation의 값을 라디안으로 변환해줘야 한다!
 radian_x = target_orientation[0] * (math.pi / 180)
-radian_y = target_orientation[1] * (math.pi / 180)
+radian_y = target_orientation[1] * (math.pi /  180)
 radian_z = target_orientation[2] * (math.pi / 180)
 
 target_pose = transl(target_position) * rotx(radian_x) * roty(radian_y) * rotz(radian_z)
@@ -54,7 +55,19 @@ target.setPose(target_pose)
 #ik_str = str(ik_joints)
 #RDK.ShowMessage('ik_joints: ' + ik_str, True)
 
+#start_time_ik = time.time()
+#solutions = robot.SolveIK(target_pose, tool)
+#end_time_ik = time.time()
+#elapsed_time2 = end_time_ik - start_time_ik
+#str_elapsed_ik = str(elapsed_time2)
+#RDK.ShowMessage('time_ik: ' + str_elapsed_ik, True)
+
+start_time = time.time()
+
 all_solutions = robot.SolveIK_All(target_pose, tool)
+#elapsed_time = timeit.timeit(lambda: robot.SolveIK_All(target_pose, tool), number=1)
+#method_time = str(elapsed_time)
+#RDK.ShowMessage('time: ' + method_time, True)
 joints_list = []
 # Iterate through each solution
 for j in all_solutions:
@@ -72,7 +85,11 @@ for j in all_solutions:
         print("Solution found!")
         joints_sol = j
         joints_sol_str = str(joints_sol)
-        RDK.ShowMessage('SolveIK_All: ' + joints_sol_str, True)
+        RDK.ShowMessage('SolveIK_All: ' + joints_sol_str, False)
         robot.setJoints(joints_sol[:6])
         break
 
+end_time = time.time()
+elapsed_time2 = end_time - start_time
+str_elapsed = str(elapsed_time2)
+RDK.ShowMessage('time: ' + str_elapsed, True)
