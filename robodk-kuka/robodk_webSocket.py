@@ -20,7 +20,39 @@ class WebSocketCommunication:
         self.previous_joints = None
         self.previous_tables = None
         self.on_table = False
+
+        # IK 계산용 thread 생성
+        self.position = None # 위치 데이터 초기화
+        self.rotation = None # 회전 데이터 초기화
+        self.ik_results = None
+        self.ik_thread = threading.Thread(target=self.ik_cal_thread)
+        self.ik_thread.start()
         print("webSocket Start!")
+
+    def ik_cal_thread(self):
+        while True:
+            if self.position and self.rotation:
+                # print("ik_cal Working!!")
+                local_pose = KUKA_2_Pose([1000 * self.position['x'], -1000 * self.position['z'], 1000 * self.position['y'], self.rotation['x'], self.rotation['y'], self.rotation['z']])
+                all_solutions = self.robot.SolveIK_All(local_pose, self.tool)
+                for j in all_solutions:
+                    conf_RLF = self.robot.JointsConfig(j).list()
+
+                    rear = conf_RLF[0]  # 1 if Rear , 0 if Front
+                    lower = conf_RLF[1]  # 1 if Lower, 0 if Upper (elbow)
+                    flip = conf_RLF[2]  # 1 if Flip , 0 if Non flip (Flip is usually when Joint 5 is negative)
+
+                    if rear == 0 and lower == 0 and flip == 0:
+                        self.ik_results = j
+                        socket_lock.acquire()
+                        self.robot.setJoints(self.ik_results[:6])
+                        socket_lock.release()
+                        # IK 계산이 완료된 후, position과 rotation을 None으로 설정
+                        self.position = None
+                        self.rotation = None
+                        break
+            time.sleep(0.001)
+
     def start_server(self):
         server = websockets.serve(self.handler, self.host, self.port)
         asyncio.get_event_loop().run_until_complete(server)
@@ -63,50 +95,13 @@ class WebSocketCommunication:
                 else:
                     joint_values = [-x1_degree, y2_degree]
                     self.turntable.setJoints(joint_values)
-
-                #joint_values = [-x1_degree, y2_degree]
-                #self.turntable.setJoints(joint_values)
                 print(f"update_turntables")
 
             if data.get("command") == "update_position":
-                #update position 시간측정 시작
-                start_time1 = time.time()
-                position = data.get("position")
-                x = position.get("x")
-                y = position.get("y")
-                z = position.get("z")
-                rotation = data.get("rotation")
-                a = rotation.get("x")
-                b = rotation.get("y")
-                c = rotation.get("z")
-                values = [1000 * x, -1000 * z, 1000 * y, a, b, c]
-                local_pose = KUKA_2_Pose(values[:6])
-                #update_position 시간측정 종료
-                end_time1 = time.time()
-                elapsed_time1 = end_time1 - start_time1
-                print(f"update_position 시간: {elapsed_time1} 초")
-                all_solutions = self.robot.SolveIK_All(local_pose, self.tool)
-                #IK계산 시간측정 시작
-                start_time2 = time.time()
-                for j in all_solutions:
-                    conf_RLF = self.robot.JointsConfig(j).list()
-
-                    rear = conf_RLF[0]  # 1 if Rear , 0 if Front
-                    lower = conf_RLF[1]  # 1 if Lower, 0 if Upper (elbow)
-                    flip = conf_RLF[2]  # 1 if Flip , 0 if Non flip (Flip is usually when Joint 5 is negative)
-
-                    if rear == 0 and lower == 0 and flip == 0:
-                        joints_sol = j
-                        socket_lock.acquire()
-                        self.robot.setJoints(joints_sol[:6])
-                        socket_lock.release()
-                        #print(self.robot.Joints())
-                        #IK계산 시간측정 종료
-                        end_time2 = time.time()
-                        elapsed_time2 = end_time2 - start_time2
-                        #print(f"IK계산 시간: {elapsed_time2} 초")
-                        await asyncio.sleep(0.00001)
-                        break
+                print("Get update_position")
+                #2024.01.02
+                self.position = data.get("position")
+                self.rotation = data.get("rotation")
 
     async def send_joint_positions(self, websocket):
         print("send_joint_positions")
@@ -123,7 +118,6 @@ class WebSocketCommunication:
                 start_time3 = time.time()
                 joints_np = np.array(current_joints)
                 joints_flat = joints_np.flatten()
-                #current_combined = np.concatenate((joints_flat, tables_flat))
 
                 data = joints_flat.tolist()
                 json_data = json.dumps(data)
