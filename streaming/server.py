@@ -1,6 +1,5 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from collections import defaultdict
 
 import asyncio, ast
 import rtde.rtde as rtde
@@ -10,21 +9,24 @@ import json
 import uvicorn
 
 import logging
+import argparse
+import time
 
 
 app = FastAPI()
 connected = set()
 
-# HOST = "169.254.16.195"
-HOST = "192.168.1.51"
-PORT = 30004
-FREQ = 125
-
-origins = ["http://localhost:8000", "https://localhost", "http://localhost"]
+parser = argparse.ArgumentParser("UR5 Streaming Server")
+parser.add_argument("--ur_host", type=str, required=True, help="UR5 IP Address")
+parser.add_argument("--ur_port", type=int, default=30004, help="UR5 Port")
+parser.add_argument("--ur_freq", type=int, default=125, help="Streaming Frequency")
+parser.add_argument("--server_host", type=str, default="0.0.0.0", help="Server Host")
+parser.add_argument("--server_port", type=int, default=3000, help="Server Port")
+args = parser.parse_args()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -58,7 +60,7 @@ async def main(workspace_id: int):
     global conn, conf, setp
     print("initialize: ", workspace_id)
 
-    conn = rtde.RTDE(HOST, PORT)
+    conn = rtde.RTDE(args.ur_host, args.ur_port)
     conn.connect()
     conf = rtde_config.ConfigFile("record_configuration.xml")
 
@@ -67,7 +69,7 @@ async def main(workspace_id: int):
 
     setp = conn.send_input_setup(setp_names, setp_types)
 
-    if not conn.send_output_setup(state_names, state_types, frequency=FREQ):
+    if not conn.send_output_setup(state_names, state_types, frequency=args.ur_freq):
         print("Unable to configure output")
         exit()
 
@@ -136,7 +138,8 @@ async def send_joints(websocket, conn):
         json.dumps(
             {
                 "len": len(joints),
-                "timestamp": state.timestamp,
+                "ur_timestamp": state.timestamp,
+                "py_timestamp": time.time(),
                 "q1": joints[0] * 180 / math.pi,
                 "q2": joints[1] * 180 / math.pi,
                 "q3": joints[2] * 180 / math.pi,
@@ -157,7 +160,7 @@ async def stream(websocket: WebSocket, workspace_id: int):
 
     initial_state = await websocket.receive_text()
 
-    print(initial_state)
+    print(initial_state, keep_running)
 
     try:
         while keep_running:
@@ -167,13 +170,20 @@ async def stream(websocket: WebSocket, workspace_id: int):
     except rtde.RTDEException:
         conn.send_pause()
         conn.disconnect()
+        keep_running = False
 
     except WebSocketDisconnect:
         conn.send_pause()
-        keep_running = False
         manager.disconnect(websocket)
+        keep_running = False
         print("Connection closed from", workspace_id)
 
 
 if __name__ == "__main__":
-    uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True, workers=2)
+    uvicorn.run(
+        "server:app",
+        host=args.server_host,
+        port=args.server_port,
+        reload=True,
+        workers=2,
+    )
