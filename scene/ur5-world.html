@@ -1,18 +1,19 @@
-<a-gltf-model id='R1' visible='true' position='0 0 0' rotation='0 0 0' scale='1 1 1' gltf-model='/assets/public/ur5/R1'>
-    <a-gltf-model id='R2' visible='true' position='0.0013470935198615086 0.08913909347601501 -0.06414285381457432' rotation='0 0 0' scale='1 1 1' gltf-model='/assets/public/ur5/R2'>
-        <a-gltf-model id='R3' visible='true' position='0.0009456174938260514 0.42463083017317876 0.0030112374258545183' rotation='0 0 90' scale='1 1 1' gltf-model='/assets/public/ur5/R3'>
+<a-entity id='gs-world' visible='true' position='-0.18283265052229683 0.2781206376139158 -0.12148916653240138' rotation='-3.8542870878450484 -37.98145658828576 1.1533640415983473' scale='0.24601 0.24601 0.24601' gaussian_splatting='src:/assets/public/livinglab;pixelRation:5;cutoutEntity:null;pixelRatio:1;xrPixelRatio:0.5;'></a-entity>
+<a-entity id='UR5' visible='true' position='0 0 0' rotation='0 0 0' scale='1 1 1'>
+   <a-gltf-model id='R1' visible='true' position='0 0 0' rotation='0 180 0' scale='1 1 1' gltf-model='/assets/public/ur5/R1'>
+      <a-gltf-model id='R2' visible='true' position='0.0013470935198615086 0.08913909347601501 -0.06414285381457432' rotation='0 0 0' scale='1 1 1' gltf-model='/assets/public/ur5/R2'>
+         <a-gltf-model id='R3' visible='true' position='0.0009456174938260514 0.42463083017317876 0.0030112374258545183' rotation='0 0 90' scale='1 1 1' gltf-model='/assets/public/ur5/R3'>
             <a-gltf-model id='R4' visible='true' position='-0.00023108101600022085 0.3906757497091764 0.004852763073198041' rotation='0 0 -90' scale='1 1 1' gltf-model='/assets/public/ur5/R4'>
-                <a-gltf-model id='R5' visible='true' position='-0.00037759212248645604 0.050176527307037366 -0.052266679023878826' rotation='0 90 0' scale='1 1 1' gltf-model='/assets/public/ur5/R5'>
-                    <a-box id='endpoint' visible='true' position='-0.0035832641870820548 0.04524281348879433 -0.13139281869669045' rotation='0 0 -239.99999999999997' scale='0.05 0.017876205207811243 0.1' />
-                </a-gltf-model>
-            </a-gltf-model>            
-        </a-gltf-model>
-    </a-gltf-model>
-</a-gltf-model>
-<a-sphere
-  id="target"
-  visible="true"
-  position="0 0.5 0.6"
-  rotation="0 0 0"
-  scale="0.03 0.03 0.03" 
-  material="color: #BBCCDD;"/>
+               <a-gltf-model id='R5' visible='true' position='-0.00037759212248645604 0.050176527307037366 -0.052266679023878826' rotation='0 90 0' scale='1 1 1' gltf-model='/assets/public/ur5/R5'>
+                  <a-box id='endpoint' visible='true' position='-0.0035832641870820548 0.04524281348879433 -0.13139281869669045' rotation='0 0 -239.99999999999997' scale='0.05 0.017876205207811243 0.1'></a-box>
+               </a-gltf-model>
+            </a-gltf-model>
+         </a-gltf-model>
+      </a-gltf-model>
+   </a-gltf-model>
+</a-entity>
+<!-- <a-sphere id='target' visible='true' position='0.15162261423689508 0.4 -0.5805261258995754' rotation='0 0 0' scale='0.03 0.03 0.03' material='color:#BBCCDD;'></a-sphere> -->
+<a-entity visible='true' position='0 0 0' rotation='0 0 0' scale='1 1 1' light='color:#BBB;angle:60;groundColor:#FFF;decay:1;distance:0;intensity:1;penumbra:0;type:directional;target:null;castShadow:false;shadowBias:0;shadowCameraFar:500;shadowCameraFov:90;shadowCameraNear:0.5;shadowCameraTop:5;shadowCameraRight:5;shadowCameraBottom:-5;shadowCameraLeft:-5;shadowCameraVisible:false;shadowMapHeight:512;shadowMapWidth:512;shadowRadius:1;'></a-entity>
+<a-entity visible='true' position='-0.5 1 1' rotation='0 0 0' scale='1 1 1' light='color:#FFF;angle:60;groundColor:#FFF;decay:1;distance:0;intensity:1;penumbra:0;type:directional;target:null;castShadow:false;shadowBias:0;shadowCameraFar:500;shadowCameraFov:90;shadowCameraNear:0.5;shadowCameraTop:5;shadowCameraRight:5;shadowCameraBottom:-5;shadowCameraLeft:-5;shadowCameraVisible:false;shadowMapHeight:512;shadowMapWidth:512;shadowRadius:1;'></a-entity>
+<a-box id='target-center-point' visible='true' position='-0.6093508231232021 -0.046076677960716905 0.0004074039910300156' rotation='0 0 0' scale='0.05 0.05 0.05' material='color:#01F2Dc;'></a-box>
+<a-light id='light' visible='true' position='-0.25642598637502323 0.2709156127518425 -0.3901828940758226' rotation='0 0 0' scale='1 1 1' light='angle:60;color:#FFF;groundColor:#FFF;decay:1;distance:0;intensity:1;penumbra:0;type:directional;target:null;castShadow:false;shadowBias:0;shadowCameraFar:500;shadowCameraFov:90;shadowCameraNear:0.5;shadowCameraTop:5;shadowCameraRight:5;shadowCameraBottom:-5;shadowCameraLeft:-5;shadowCameraVisible:false;shadowMapHeight:512;shadowMapWidth:512;shadowRadius:1;'></a-light>
