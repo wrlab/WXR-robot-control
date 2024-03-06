@@ -11,6 +11,8 @@ socket_lock = threading.Lock()
 
 def rad2degree(rad):
     return rad * 180 / math.pi
+
+
 class WebSocketCommunication:
     def __init__(self, host, port, robot, tool, turntable, rdk):
         self.host = host
@@ -24,30 +26,31 @@ class WebSocketCommunication:
         self.rdk = rdk
 
         # IK 계산용 thread 생성
-        self.position = None # 위치 데이터 초기화
-        self.rotation = None # 회전 데이터 초기화
-        self.reachable = True # IK솔루션 있을 경우 초기화
+        self.position = None  # 위치 데이터 초기화
+        self.rotation = None  # 회전 데이터 초기화
+        self.reachable = True  # IK솔루션 있을 경우 초기화
         self.ik_results = None
         self.ik_thread = threading.Thread(target=self.ik_cal_thread)
         self.ik_thread.start()
         self.reachable_event = asyncio.Event()
         print("webSocket Start!")
 
-
     def ik_cal_thread(self):
         while True:
             if self.position and self.rotation:
-                #print("ik_cal Working!!")
-                local_pose = KUKA_2_Pose([1000 * self.position['x'], -1000 * self.position['z'], 1000 * self.position['y'], self.rotation['x'], self.rotation['y'], self.rotation['z']])
+                # print("ik_cal Working!!")
+                local_pose = KUKA_2_Pose(
+                    [1000 * self.position['x'], -1000 * self.position['z'], 1000 * self.position['y'],
+                     self.rotation['x'], self.rotation['y'], self.rotation['z']])
                 all_solutions = self.robot.SolveIK_All(local_pose, self.tool)
 
                 # 2024.01.12 기준으로 if len(all_solutions) == 0: 이 부분으로 진입하지 않음 수정해야함!!
                 if len(all_solutions) == 0:
                     print("IK unreachable!!")
                     # 현재는 메시지 출력으로 디버깅하고, 나중에는 단순 변수 변환으로 변경예정(2024.01.12)
-                    #self.rdk.ShowMessage('There is no solution for requested position', True)
+                    # self.rdk.ShowMessage('There is no solution for requested position', True)
                     self.reachable = False
-                    self.reachable_event.clear() # IK가 불가능할 때 이벤트 해제
+                    self.reachable_event.clear()  # IK가 불가능할 때 이벤트 해제
                 else:
                     for j in all_solutions:
                         conf_RLF = self.robot.JointsConfig(j).list()
@@ -65,16 +68,16 @@ class WebSocketCommunication:
                             self.position = None
                             self.rotation = None
                             self.reachable = True
-                            self.reachable_event.set() # IK가 가능할 때 이벤트 설정
+                            self.reachable_event.set()  # IK가 가능할 때 이벤트 설정
                             print("IK reachable!!")
                             break
 
             time.sleep(0.001)
 
-    def start_server(self):
-        server = websockets.serve(self.handler, self.host, self.port)
-        asyncio.get_event_loop().run_until_complete(server)
-        asyncio.get_event_loop().run_forever()
+    async def start_server(self):
+        async with websockets.serve(self.handler, self.host, self.port):
+            print("WebSocket server started. Awaiting connections...")
+            await asyncio.Future()  # 현재 태스크가 종료되지 않도록 유지.
 
     async def handler(self, websocket):
         receiver_task = asyncio.create_task(self.receive_messages(websocket))
@@ -117,14 +120,14 @@ class WebSocketCommunication:
 
             if data.get("command") == "update_position":
                 print("Get update_position")
-                #2024.01.02
+                # 2024.01.02
                 self.position = data.get("position")
                 self.rotation = data.get("rotation")
 
     async def send_joint_positions(self, websocket):
         print("send_joint_positions")
         while True:
-            await  self.reachable_event.wait() # reachable이 True가 될 때까지 대기
+            await  self.reachable_event.wait()  # reachable이 True가 될 때까지 대기
 
             # 관절 위치 전송 로직
             socket_lock.acquire()
@@ -164,6 +167,3 @@ class WebSocketCommunication:
 
             # send_joint_positions에서 webSocket을 독점하는 것을 막기 위해
             await asyncio.sleep(0.00001)
-
-
-
