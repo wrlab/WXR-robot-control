@@ -1,0 +1,45 @@
+KUKA KR50 R2100
+
+A1
+axis: -Z, min limit: -185, max limit: 185, initial rotation: 0
+A:0, B:0, C:0
+coordinates: (0,0,0)
+Offset: Rz(-Kinematics::JointZeroOffset1)
+
+A2
+axis: +Y, min limit: -175, max limit: 60, initial rotation: -90
+A:0, B:0, C:0
+coordinates: (175,0,575)
+Offset: Tz(Kinematics::L01Z).Tx(Kinematics::L12X).Ty(Kinematics::L12Y).Ry(-Kinematics::JointZeroOffset2)
+Offset results: Tx(175).Tz(575).Ry(90)
+
+A3
+axis: +Y, min limit: -120, max limit: 165, initial rotation: 90
+A:0, B:90, C:0
+coordinates: (175,0,1465)
+Offset: Tx(Kinematics::L23X).Tz(Kinematics::L23Z).Ry(-Kinematics::JointZeroOffset3)
+Offset results: Tx(890)
+
+A4
+axis: -Z, min limit: -180, max limit: 180, initial rotation: 0
+A:0, B:90, C:0
+coordinates: (1210,0,1515)
+Offset: Tx(Kinematics::L34X).Tz(Kinematics::L34Z).Rz(-Kinematics::JointZeroOffset4)
+Offset results: Tx(-50).Tz(1035)
+
+A5
+axis: +Z, min limit: -125, max limit: 125, initial rotation: 0
+A:0, B:90, C:-90
+coordinates: (1210,0,1515)
+Offset: Rx(Kinematics::A45).Tx(Kinematics::L45X).Tz(Kinematics::L45Z).Rz(-Kinematics::JointZeroOffset5)
+Offset results: Rx(-90)
+
+A6
+axis: -Z, min limit: -350, max limit: 1350, initial rotation: 0
+A:0, B:90, C:0
+coordinates: (1395,0,1515)
+Offset: Rx(-Kinematics::A45).Tz(Kinematics::L56Z).Rz(-Kinematics::JointZeroOffset6)
+Offset results: Ty(-185).Rx(90)
+
+Endpoint
+coordinates: (1631.295206,14.032988, 1263,338617)
