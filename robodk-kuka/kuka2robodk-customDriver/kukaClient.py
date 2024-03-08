@@ -66,6 +66,10 @@ class kukaClient:
         is_ok = self.rsp[-3:]
         if debug:
             print('Response:', self.rsp)
+        else:
+            #return body.decode('utf-8')
+            self.msg_id = (self.msg_id + 1) % 65536
+            return self.rsp.decode('utf-8')
         if is_ok.endswith(b'\x01'):
             self.msg_id = (self.msg_id + 1) % 65536
             return body.decode('utf-8')
