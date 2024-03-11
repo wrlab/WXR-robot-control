@@ -96,7 +96,7 @@ class WebSocketCommunication:
                             print("IK reachable!!")
                             break
 
-            time.sleep(0.001)
+            time.sleep(0.00001)
 
     def ik_cal_thread2(self):
         while True:
@@ -135,12 +135,8 @@ class WebSocketCommunication:
                             print("IK reachable!!")
                             break
 
-            time.sleep(0.001)
+            time.sleep(0.00001)
 
-    #async def start_server(self):
-    #    async with websockets.serve(self.handler, self.host, self.port):
-    #        print("WebSocket server started. Awaiting connections...")
-    #        await asyncio.Future()  # 현재 태스크가 종료되지 않도록 유지.
     def start_server(self):
         server = websockets.serve(self.handler, self.host, self.port)
         asyncio.get_event_loop().run_until_complete(server)
