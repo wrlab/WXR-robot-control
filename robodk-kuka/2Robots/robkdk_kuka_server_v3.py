@@ -89,10 +89,8 @@ if __name__ == "__main__":
     # 웹소켓 서버 인스턴스 생성
     ws_comm = WebSocketCommunication(Config_server.HOST, Config_server.PORT, robot1, robot2, tool1, tool2, turntable1, turntable2, RDK)
     print("웹소켓 서버 인스턴스 생성")
-
-    # 웹소켓 서버 비동기적으로 시작
-
     ws_comm.start_server()
     print("웹소켓 서버 비동기적으로 시작")
 
+    # 웹소켓 서버 비동기적으로 시작
     #asyncio.run(main())
