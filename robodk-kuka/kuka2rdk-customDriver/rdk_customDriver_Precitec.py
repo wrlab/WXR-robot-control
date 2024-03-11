@@ -1,7 +1,7 @@
-from robodk_webSocket_v2 import WebSocketCommunication
+from rdk_webSocket_v2 import WebSocketCommunication
 from robodk.robolink import *
-from robodk_config_v2 import Config_server
-from robodk_config_v2 import Config_host
+from rdk_config_v2 import Config_server
+from rdk_config_v2 import Config_host2
 import asyncio
 from asyncio import Event
 from kukaClient import kukaClient
@@ -38,7 +38,7 @@ async def parse_joint_data_corrected(response):
 
 
 async def update_robot_angles(robot, stop_event):
-    kuka_client = kukaClient(Config_host.HOST, Config_host.PORT)
+    kuka_client = kukaClient(Config_host2.HOST, Config_host2.PORT)
     print(kuka_client.ip)
     print(kuka_client.port)
     if not kuka_client.can_connect:
@@ -53,7 +53,7 @@ async def update_robot_angles(robot, stop_event):
             # response = kuka_client.read("POS_ACT", False)
             # joints_list = parsing_data(response)
             # joints_list = parse_joint_data_corrected(response)
-            joints_list = [0, -90, 90, 0, 0, 0]
+            joints_list = [0, -90, 80, 0, 0, 0]
             # robot.setJoints(joints_list)
             if response:
                 print(f"서버로부터 받은 관절각도: {response}")
@@ -68,7 +68,7 @@ async def update_robot_angles(robot, stop_event):
 async def main():
     # 로봇 연결
     RDK = Robolink()
-    robot = RDK.Item('KUKA KR 70 R2100-Meltio')
+    robot = RDK.Item('KUKA KR 70 R2100-Precitec')
     tool = robot.Tool()
     turntable = RDK.Item('2DOF Turn-table')
     reference = RDK.Item('Baseline')
@@ -81,31 +81,12 @@ async def main():
     # 인스턴스 생성 및 초기화
     stop_event = Event()
 
-    # ws_comm = WebSocketCommunication(Config_server.HOST, Config_server.PORT, robot, tool, turntable, RDK)
-
-    # # Connect to the robot using default connetion parameters
-    # success = robot.Connect()
-    # print("성공할 경우: True, 실패할 경우: False")
-    # print(success)
-    # status, status_msg = robot.ConnectedState()
-    # print("ConnectedState: ")
-    # print(status)
-    # print(status_msg)
-    # if status != ROBOTCOM_READY:
-    #     # Stop if the connection did not succeed
-    #     raise Exception("Failed to connect: " + status_msg)
-    # # Set to run the robot commands on the robot
-    # print("로봇과의 연결이 성공적으로 이루어졌습니다. RUNMODE_RUN_ROBOT을 설정합니다.")
-    # RDK.setRunMode(RUNMODE_RUN_ROBOT)
-
     # 초기 설정
     robot.setPoseFrame(reference)
     robot.setPoseTool(tool)
     robot.setSpeedJoints(joints_speed)
 
     # 웹소켓 서버 태스크 생성
-    # ws_server_task = asyncio.create_task(ws_comm.start_server())
-    # robot_control_task = asyncio.create_task(send2kuka(robot, stop_event))
     robot_update_task = asyncio.create_task(update_robot_angles(robot, stop_event))
 
     # 서버 및 로봇 제어 태스크를 기다림

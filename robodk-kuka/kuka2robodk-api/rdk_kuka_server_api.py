@@ -1,6 +1,4 @@
 from robodk.robolink import *
-from robodk_config_v4 import Config_server
-from robodk_config_v4 import Config_host
 import asyncio
 from asyncio import Event
 
@@ -25,7 +23,7 @@ async def rdk_update_robot_angles(robot, stop_event):
 
     while not stop_event.is_set():
         # 서버로부터 데이터 요청
-        joints_str = robot.setParam("Driver", "GET $AXIS_ACT")
+        joints_str = robot.setParam("Driver", "GET $AXIS_ACT_MEAS")
         print(f"서버로부터 받은 관절각도: {joints_str}")
         if robot:
             robot.setJoints(joints_str)

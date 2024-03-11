@@ -1,7 +1,7 @@
-from robodk_webSocket_v3 import WebSocketCommunication
+from rdk_webSocket_2robots import WebSocketCommunication
 from robodk.robolink import *
-from robodk_config_v3 import Config_server
-from robodk_config_v3 import Config_host
+from rdk_config_v3 import Config_server
+from rdk_config_v3 import Config_host
 import asyncio
 from asyncio import Event
 
