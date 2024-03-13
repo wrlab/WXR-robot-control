@@ -45,6 +45,7 @@ async def update_robot_angles(robot, stop_event):
         print("KUKA 서버에 연결할 수 없습니다.")
         return
     try:
+        count = True
         while not stop_event.is_set():
             # 서버로부터 데이터 요청
             response = kuka_client.read("AXIS_ACT_MEAS", False)
@@ -54,11 +55,18 @@ async def update_robot_angles(robot, stop_event):
             # joints_list = parsing_data(response)
             # joints_list = parse_joint_data_corrected(response)
             joints_list = [0, -90, 80, 0, 0, 0]
+            joints_list2 = [0, -90, 70, 0, 0, 0]
             # robot.setJoints(joints_list)
             if response:
-                print(f"서버로부터 받은 관절각도: {response}")
-                if robot:
+                #print(f"서버로부터 받은 관절각도: {response}")
+                if robot and count:
                     robot.setJoints(joints_list)
+                    print(joints_list)
+                    count = False
+                else:
+                    robot.setJoints(joints_list2)
+                    print(joints_list2)
+                    count = True
 
             await asyncio.sleep(0.5)  # 비동기 대기
     finally:

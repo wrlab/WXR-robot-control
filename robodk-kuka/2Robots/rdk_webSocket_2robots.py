@@ -203,6 +203,7 @@ class WebSocketCommunication:
             # 관절 위치 전송 로직
             socket_lock.acquire()
             current_joints1 = self.robot1.Joints()
+            print(current_joints1)
             current_tables1 = self.turntable1.Joints()
             socket_lock.release()
 
@@ -228,6 +229,8 @@ class WebSocketCommunication:
                 await websocket.send(json_data)
 
                 self.previous_joints1 = current_joints1
+            else:
+                print("Same as Joint1")
 
             if not np.array_equal(current_tables1, self.previous_tables1) and not self.on_table1:
                 print("send_turntable_rotations of table[1]")
