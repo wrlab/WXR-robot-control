@@ -60,7 +60,7 @@ async def update_robot_angles(robot, stop_event):
                 if robot:
                     robot.setJoints(joints_list)
 
-            await asyncio.sleep(0.5)  # 비동기 대기
+            await asyncio.sleep(0.2)  # 비동기 대기
     finally:
         kuka_client.close()  # 클라이언트 연결 종료
 

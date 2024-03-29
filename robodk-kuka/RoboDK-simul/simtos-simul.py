@@ -27,8 +27,8 @@ program2.setFrame(precitec_frame)
 program1.ShowInstructions(True)
 program2.ShowInstructions(True)
 
-radius = 300
-height = 100
+radius = 450
+height = 200
 
 for z in range(height + 1):
     targets = [

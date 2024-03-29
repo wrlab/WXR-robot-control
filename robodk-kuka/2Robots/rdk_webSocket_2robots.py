@@ -204,12 +204,12 @@ class WebSocketCommunication:
             socket_lock.acquire()
             current_joints1 = self.robot1.Joints()
             print(current_joints1)
-            current_tables1 = self.turntable1.Joints()
+            #current_tables1 = self.turntable1.Joints()
             socket_lock.release()
 
             socket_lock2.acquire()
             current_joints2 = self.robot2.Joints()
-            current_tables2 = self.turntable2.Joints()
+            #current_tables2 = self.turntable2.Joints()
             socket_lock2.release()
 
             reachable1 = self.reachable1
@@ -232,14 +232,14 @@ class WebSocketCommunication:
             else:
                 print("Same as Joint1")
 
-            if not np.array_equal(current_tables1, self.previous_tables1) and not self.on_table1:
-                print("send_turntable_rotations of table[1]")
-                tables_np = np.array(current_tables1)
-                tables_flat = tables_np.flatten()
-                data2 = tables_flat.tolist()
-                json_data2 = json.dumps(data2)
-                await websocket.send(json_data2)
-                self.previous_tables1 = current_tables1
+            # if not np.array_equal(current_tables1, self.previous_tables1) and not self.on_table1:
+            #     print("send_turntable_rotations of table[1]")
+            #     tables_np = np.array(current_tables1)
+            #     tables_flat = tables_np.flatten()
+            #     data2 = tables_flat.tolist()
+            #     json_data2 = json.dumps(data2)
+            #     await websocket.send(json_data2)
+            #     self.previous_tables1 = current_tables1
 
             if not np.array_equal(current_joints2, self.previous_joints2):
                 # 웹소켓 전송 시간 시작
@@ -257,14 +257,14 @@ class WebSocketCommunication:
 
                 self.previous_joints2 = current_joints2
 
-            if not np.array_equal(current_tables2, self.previous_tables2) and not self.on_table2:
-                print("send_turntable_rotations of table[2]")
-                tables_np = np.array(current_tables2)
-                tables_flat = tables_np.flatten()
-                data2 = tables_flat.tolist()
-                json_data2 = json.dumps(data2)
-                await websocket.send(json_data2)
-                self.previous_tables2 = current_tables2
+            # if not np.array_equal(current_tables2, self.previous_tables2) and not self.on_table2:
+            #     print("send_turntable_rotations of table[2]")
+            #     tables_np = np.array(current_tables2)
+            #     tables_flat = tables_np.flatten()
+            #     data2 = tables_flat.tolist()
+            #     json_data2 = json.dumps(data2)
+            #     await websocket.send(json_data2)
+            #     self.previous_tables2 = current_tables2
 
             json_data3 = json.dumps(reachable1)
             await websocket.send(json_data3)
