@@ -66,10 +66,9 @@ class kukaClient:
         is_ok = self.rsp[-3:]
         if debug:
             print('Response:', self.rsp)
-        else:
-            #return body.decode('utf-8')
-            self.msg_id = (self.msg_id + 1) % 65536
-            return self.rsp.decode('utf-8')
+        # else:
+        #     self.msg_id = (self.msg_id + 1) % 65536
+        #     return self.rsp.decode('utf-8')
         if is_ok.endswith(b'\x01'):
             self.msg_id = (self.msg_id + 1) % 65536
             return body.decode('utf-8')
@@ -86,33 +85,3 @@ class kukaClient:
 
     def close(self):
         self.sock.close()
-
-#
-# def main():
-#     ip_add = "192.168.1.129"
-#     port = 9000
-#
-#     client = kukaClient(ip_add, port)
-#
-#     if not client.can_connect:
-#         print("서버에 연결할 수 없습니다.")
-#         sys.exit(-1)
-#
-#     var_name1 = "$OV_PRO"
-#     var_name2 = "AXIS_ACT"
-#     var_name3 = "AXIS_ACT_MEAS"
-#     print(f"변수 '{var_name1}' 에 대한 요청을 보냅니다.")
-#     print(f"변수 '{var_name2}' 에 대한 요청을 보냅니다.")
-#     print(f"변수 '{var_name3}' 에 대한 요청을 보냅니다.")
-#     response1 = client.read(var_name1)
-#     response2 = client.read(var_name2)
-#     response3 = client.read(var_name3)
-#     print(f"서버로부터 받은 응답: {response1}")
-#     print(f"서버로부터 받은 응답: {response2}")
-#     print(f"서버로부터 받은 응답: {response3}")
-#
-#     client.close()
-#
-#
-# if __name__ == "__main__":
-#     main()
