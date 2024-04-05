@@ -10,13 +10,6 @@ from kukaClient import kukaClient
 # 24.03.08 기준 완성해야함
 # AM 솔루션즈 출장가서 출력된 메시지를 확인하고,
 # 해당 포맷에 맞는 메소드 개발할 예정
-async def parsing_data(response):
-    # 파싱할 데이터가 저장될 데이터
-    parsed_data = None
-
-    return parsed_data
-
-
 async def parse_joint_data_corrected(response):
     # 문자열에서 필요하지 않은 초기 부분을 제거
     response = response.split('{')[1]
