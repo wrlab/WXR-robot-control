@@ -11,18 +11,19 @@ async def parse_joint_data_corrected(response):
     key, value = str(response).split(":")
     key = key[1:].strip()
     value = value[:-2].strip()
-
     joints = {k: float(v) for k, v in [j.split() for j in value.split(",")]}
-
     return list(joints.values())
 
+
 async def update_robot_angles(robot, stop_event):
+    kuka_client = None
     if robot.Name() == 'KUKA KR 70 R2100-Meltio':
         kuka_client = kukaClient(Config_host.HOST, Config_host.PORT)
     elif robot.Name() == 'KUKA KR 70 R2100-Precitec':
         kuka_client = kukaClient(Config_host2.HOST, Config_host2.PORT)
-    print("KUKA client IP: " + str(kuka_client.ip))
-    print("KUKA client Port: " + str(kuka_client.port))
+    print(f"KUKA client for {robot.Name()} IP: {kuka_client.ip}, Port: {kuka_client.port}")
+    #print("KUKA client IP: " + str(kuka_client.ip))
+    #print("KUKA client Port: " + str(kuka_client.port))
     if not kuka_client.can_connect:
         print("KUKA 서버에 연결할 수 없습니다.")
         return
@@ -33,8 +34,8 @@ async def update_robot_angles(robot, stop_event):
             response = kuka_client.read("AXIS_ACT_MEAS", False)
             # 현재 TCP 좌표 값: POS_ACT
             joints_list = await parse_joint_data_corrected(response)
-            print("서버로부터 받은 joints: " + str(joints_list))
-            # robot.setJoints(joints_list)
+            print(f"Joints from server for {robot.Name()}: {joints_list}")
+            #print("서버로부터 받은 joints: " + str(joints_list))
             # 24.03.20 기준 현재 KUKA로부터 받은 joints값을 그대로 RoboDK에 반영할 경우
             # 일부 축에 대해서 반대 방향으로 움직이는 문제 발생
             # 반대 방향으로 움직이는 축: A1, A4, A5
@@ -43,10 +44,10 @@ async def update_robot_angles(robot, stop_event):
             joints_list[0], joints_list[3], joints_list[5] = a, b, c
             print("실제 움직임에 받게 변경한 joints: " + str(joints_list))
             robot.setJoints(joints_list[:6])
-
             await asyncio.sleep(0.2)  # 비동기 대기
     finally:
         kuka_client.close()  # 클라이언트 연결 종료
+
 
 async def main():
     # RoboDK 초기화
@@ -63,6 +64,7 @@ async def main():
     turntable2 = RDK.Item('2DOF Turn-table')
     reference2 = RDK.Item('Baseline')
 
+    # 속도 변수 설정
     linear_speed = 10
     angular_speed = 180
     joints_speed = 5
@@ -88,10 +90,10 @@ async def main():
     robot_update_task_Precitec = asyncio.create_task(update_robot_angles(robot2, stop_event))
 
     # 서버 및 로봇 제어 태스크를 기다림
-    await asyncio.gather(  # ws_server_task,
-        # robot_control_task,
+    await asyncio.gather(
         robot_update_task_Precitec,
         robot_update_task_Meltio)
+
 
 # 웹소켓 통신 모듈 인스턴스 생성 및 서버 시작
 if __name__ == "__main__":

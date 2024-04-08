@@ -45,11 +45,6 @@ class WebSocketCommunication:
         self.reachable1 = True  # IK솔루션 있을 경우 초기화
         self.reachable_event1 = asyncio.Event()
         self.ik_results1 = None
-        # self.ik_thread1 = threading.Thread(
-        #     target=self.ik_cal_thread,
-        #     args=(self.robot1, self.tool1, self.position1, self.rotation1,
-        #           self.reachable_event1, self.ik_results1))
-        # self.ik_thread1.start()
 
         # IK 계산용 thread 생성 [robot2]
         self.position2 = None  # 위치 데이터 초기화
@@ -57,11 +52,7 @@ class WebSocketCommunication:
         self.reachable2 = True  # IK솔루션 있을 경우 초기화
         self.reachable_event2 = asyncio.Event()
         self.ik_results2 = None
-        # self.ik_thread2 = threading.Thread(
-        #     target=self.ik_cal_thread,
-        #     args=(self.robot2, self.tool2, self.position2, self.rotation2,
-        #           self.reachable_event2, self.ik_results2))
-        # self.ik_thread2.start()
+
         self.start_ik_threads()
 
         print("webSocket Start!")
