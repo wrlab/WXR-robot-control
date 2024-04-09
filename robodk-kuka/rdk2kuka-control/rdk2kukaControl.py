@@ -11,14 +11,15 @@ if __name__ == "__main__":
     turntable = RDK.Item('2DOF Turn-table')
     reference = RDK.Item('Baseline')
 
+    #current Joints
+    current_joints = robot.SimulatorJoints()
+    print("Current joint values are:", current_joints)
+
     linear_speed = 10
     angular_speed = 180
     joints_speed = 5
     joints_accel = 40
     is_stop = False
-
-    joints = robot.SimulatorJoints()
-    print("Current joint values are:", joints)
 
     # Connect to the robot using default connetion parameters
     success = robot.Connect()
@@ -37,11 +38,25 @@ if __name__ == "__main__":
     robot.setSpeedJoints(joints_speed)
 
     while True:
+        start_time = time.time()
+        # Joints가 이전 값과 다른지 확인
+        # 이 아래에 작성
+        # Joints가 이전 값과 다를 경우
         joints = robot.SimulatorJoints()
-        print("Current joint values are:", joints)
-        robot.MoveJ(joints)
-        print("Robot MoveJ")
-        time.sleep(0.01)
+        if not current_joints == joints:
+            print("Change joint values are:", joints)
+            robot.MoveJ(joints)
+            print("Robot MoveJ")
+            current_joints = joints
+
+            # 종료 시간 측정
+            end_time = time.time()
+            # 실행 시간 계산
+            execution_time = end_time - start_time
+            print(f"Execution time: {execution_time} seconds")
+
+            time.sleep(0.004)
+
         if is_stop:
             break
 
