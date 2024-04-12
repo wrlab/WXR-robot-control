@@ -71,10 +71,12 @@ class WebSocketCommunication:
             if position and rotation:
                 # IK 계산 로직
                 local_pose = self.cal_local_pose(position, rotation)
+
                 all_solutions = robot.SolveIK_All(local_pose, tool)
 
                 if len(all_solutions) == 0:
                     print("IK unreachable!!")
+                    self.reachable1 = False
                 else:
                     for j in all_solutions:
                         conf_rlf = robot.JointsConfig(j).list()
@@ -82,10 +84,14 @@ class WebSocketCommunication:
 
                         if rear == 0 and lower == 0 and flip == 0:
                             robot.setJoints(j[:6])
+                            self.reachable1 = True
                             print("IK reachable!!")
                             # IK 결과를 인스턴스 변수에 저장
                             setattr(self, f'ik_results{robot_id}', j[:6])
                             break
+                        else:
+                            print("IK unreachable!!")
+                            self.reachable1 = False
 
                 # 다음 IK 계산을 위해 위치와 회전 데이터 초기화
                 setattr(self, f'position{robot_id}', None)
@@ -160,38 +166,44 @@ class WebSocketCommunication:
     async def send_joint_positions(self, websocket):
         print("send_joint_positions")
         while True:
-            #await  self.reachable_event1.wait()  # reachable이 True가 될 때까지 대기
+            # await  self.reachable_event1.wait()  # reachable이 True가 될 때까지 대기
 
             # 관절 위치 전송 로직
-            #socket_lock.acquire()
+            # socket_lock.acquire()
             current_joints1 = self.robot1.Joints()
-            #print(current_joints1)
-            #current_tables1 = self.turntable1.Joints()
-            #socket_lock.release()
+            # print(current_joints1)
+            # current_tables1 = self.turntable1.Joints()
+            # socket_lock.release()
 
-            #socket_lock2.acquire()
+            # socket_lock2.acquire()
             current_joints2 = self.robot2.Joints()
-            #current_tables2 = self.turntable2.Joints()
-            #socket_lock2.release()
+            # current_tables2 = self.turntable2.Joints()
+            # socket_lock2.release()
 
             reachable1 = self.reachable1
 
+            if not reachable1:
+                json_data3 = json.dumps(reachable1)
+                #data_np = np.array(json_data3)
+                print(json_data3)
+                await websocket.send(json_data3)
+            else:
+                # 로봇 관절 각도 값들이나 턴테이블의 각도값이 변하였을 때 데이터 전송
+                if not np.array_equal(current_joints1, self.previous_joints1):
+                    # 웹소켓 전송 시간 시작
+                    # print("send_joint_positions of robot[1]")
+                    start_time3 = time.time()
+                    joints_np = np.array(current_joints1)
+                    joints_flat = joints_np.flatten()
 
-            # 로봇 관절 각도 값들이나 턴테이블의 각도값이 변하였을 때 데이터 전송
-            if not np.array_equal(current_joints1, self.previous_joints1):
-                # 웹소켓 전송 시간 시작
-                #print("send_joint_positions of robot[1]")
-                start_time3 = time.time()
-                joints_np = np.array(current_joints1)
-                joints_flat = joints_np.flatten()
+                    data = joints_flat.tolist()
+                    data.append('robot1')
+                    data.append(reachable1)
+                    json_data = json.dumps(data)
+                    await websocket.send(json_data)
 
-                data = joints_flat.tolist()
-                data.append('robot1')
-                json_data = json.dumps(data)
-                await websocket.send(json_data)
-
-                self.previous_joints1 = current_joints1
-            #else:
+                    self.previous_joints1 = current_joints1
+            # else:
             #    print("Same as Joint1")
 
             # if not np.array_equal(current_tables1, self.previous_tables1) and not self.on_table1:
@@ -205,15 +217,15 @@ class WebSocketCommunication:
 
             if not np.array_equal(current_joints2, self.previous_joints2):
                 # 웹소켓 전송 시간 시작
-                #print("send_joint_positions of robot[2]")
+                # print("send_joint_positions of robot[2]")
                 start_time3 = time.time()
                 joints_np = np.array(current_joints2)
                 joints_flat = joints_np.flatten()
-                #print("joints_flat_r2: " + str(joints_flat))
+                # print("joints_flat_r2: " + str(joints_flat))
 
                 data = joints_flat.tolist()
                 data.append('robot2')
-                #print("data_r2: " + str(data))
+                # print("data_r2: " + str(data))
                 json_data = json.dumps(data)
                 await websocket.send(json_data)
 
@@ -228,8 +240,9 @@ class WebSocketCommunication:
             #     await websocket.send(json_data2)
             #     self.previous_tables2 = current_tables2
 
-            json_data3 = json.dumps(reachable1)
-            await websocket.send(json_data3)
+            # json_data3 = json.dumps(reachable1)
+            # print(json_data3)
+            # await websocket.send(json_data3)
 
             # send_joint_positions에서 webSocket을 독점하는 것을 막기 위해
             await asyncio.sleep(0.00001)
