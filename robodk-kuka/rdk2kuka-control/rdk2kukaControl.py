@@ -20,6 +20,10 @@ class rdk2kukaControl:
         self.bbox = self.RDK.Item('bbox')
         self.current_joints = self.robot.SimulatorJoints()
 
+        # bool
+        self.is_collide = False
+        self.within_bbox = True
+
         # Boundary limits
         self.min_x, self.max_x, self.min_y, self.max_y, self.min_z, self.max_z = [-90, 90, -90, 90, 10, 190]
 
@@ -39,16 +43,20 @@ class rdk2kukaControl:
             tcp_z < self.min_z, tcp_z > self.max_z
         ]):
             print("TCP out of range!!")
+            self.within_bbox = False
             return True
         else:
-            print("TCP within range!!!")
+            print("TCP within range.")
+            self.within_bbox = True
             return False
 
     def collision_detection(self):
         if self.RDK.Collisions() > 0:
             print("Collided!!")
+            self.is_collide = True
         else:
             print("is not Collided.")
+            self.is_collide = False
 
     def order2kuka(self):
         start_time = time.time()
@@ -60,14 +68,22 @@ class rdk2kukaControl:
             self.current_joints = joints
 
             # Execution time
-            print(f"Execution time: {time.time() - start_time()} seconds")
+            print(f"Execution time: {time.time() - start_time} seconds")
             time.sleep(0.004)
 
     def run(self):
         while True:
             self.check_bbox()
             self.collision_detection()
-            self.order2kuka()
+
+            if not self.is_collide and self.within_bbox:
+                print("order2kuka")
+                #self.order2kuka()
+            else:
+                print("can't order2kuka!!")
+                break
+
+        print("rdk2kukaControl Program has ended.")
 
 
 if __name__ == "__main__":

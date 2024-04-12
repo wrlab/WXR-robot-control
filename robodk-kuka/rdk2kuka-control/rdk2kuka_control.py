@@ -1,0 +1,132 @@
+from robodk.robolink import *
+from robodk.robomath import *
+import time
+import asyncio
+
+linear_speed = 10
+angular_speed = 180
+joints_speed = 5
+joints_accel = 40
+is_stop = False
+
+
+class Rdk2KukaControl:
+    def __init__(self):
+        self.RDK = Robolink()
+        self.robot = self.RDK.Item('KUKA KR 70 R2100-Meltio')
+        self.tool = self.robot.Tool()
+        self.reference = self.RDK.Item('Baseline')
+        self.tcp_obj = self.RDK.Item('tcp_obj')
+        self.bbox = self.RDK.Item('bbox')
+        self.current_joints = self.robot.SimulatorJoints()
+
+        # bool
+        self.is_collide = False
+        self.within_bbox = True
+
+        # Boundary limits
+        self.min_x, self.max_x, self.min_y, self.max_y, self.min_z, self.max_z = [-90, 90, -90, 90, 10, 190]
+
+        # Initial robot settings
+        self.robot.setPoseFrame(self.reference)
+        self.robot.setPoseTool(self.tool)
+        self.robot.setSpeedJoints(joints_speed)
+
+    async def check_bbox(self):
+        while not is_stop:
+            relative_pose = self.tcp_obj.PoseWrt(self.reference)
+            kukaPose = Pose_2_KUKA(relative_pose)
+            tcp_x, tcp_y, tcp_z = kukaPose[:3]
+
+            if any([
+                tcp_x < self.min_x, tcp_x > self.max_x,
+                tcp_y < self.min_y, tcp_y > self.max_y,
+                tcp_z < self.min_z, tcp_z > self.max_z
+            ]):
+                print("TCP out of range!!")
+                self.within_bbox = False
+            else:
+                print("TCP within range.")
+                self.within_bbox = True
+
+            await asyncio.sleep(0.004)
+
+    async def collision_detection(self):
+        while not is_stop:
+            if self.RDK.Collisions() > 0:
+                print("Collided!!")
+                self.is_collide = True
+            else:
+                print("is not Collided.")
+                self.is_collide = False
+
+            await asyncio.sleep(0.004)
+
+    async def order2kuka(self):
+        while not is_stop:
+            start_time = time.time()
+            joints = self.robot.SimulatorJoints()
+            if (self.current_joints != joints) and (not self.is_collide and self.within_bbox):
+                # kuka_controller 에 이동 명령 전달
+                # print("Change joint values are: ", joints)
+                # self.robot.MoveJ(joints)
+                # print("Robot MoveJ")
+                # self.current_joints = joints
+
+                # Execution time
+                print(f"Execution time: {time.time() - start_time} seconds")
+            else:
+                print("Not order2kuka!")
+
+            await asyncio.sleep(0.004)
+
+    async def run(self):
+        # 각 기능을 독립적인 태스크로 실행
+        bbox_task = asyncio.create_task(self.check_bbox())
+        collision_task = asyncio.create_task(self.collision_detection())
+        order_task = asyncio.create_task(self.order2kuka())
+
+        while not is_stop:
+            # 조건을 체크하여 프로그램 종료 여부 결정
+            if not self.is_collide and self.within_bbox:
+                print("조건 충족, 작업 계속 진행")
+            else:
+                print("경계를 벗어나거나 충돌 발생, 프로그램 종료")
+                # 태스크를 취소
+                bbox_task.cancel()
+                collision_task.cancel()
+                order_task.cancel()
+                break  # while 루프 종료
+
+            # 짧은 대기 시간을 주어 CPU 사용률을 관리
+            await asyncio.sleep(0.1)
+
+        # 모든 태스크가 완료될 때까지 기다림
+        await asyncio.gather(bbox_task, collision_task, order_task, return_exceptions=True)
+
+        print('Rdk2KukaControl Program has ended.')
+
+        # while not is_stop:
+        #     await self.check_bbox()
+        #     await self.collision_detection()
+        #
+        #     if not self.is_collide and self.within_bbox:
+        #         print("order2kuka")
+        #         await self.order2kuka()
+        #     else:
+        #         print("Can't order2kuka!!")
+        #         # 종료
+        #         #break
+        #
+        # print('Rdk2KukaControl Program has ended.')
+
+
+if __name__ == "__main__":
+    kuka_controller = Rdk2KukaControl()
+
+    # 비동기 이벤트 루프 시작
+    loop = asyncio.get_event_loop()
+    try:
+        loop.run_until_complete(kuka_controller.run())
+    finally:
+        loop.close()
