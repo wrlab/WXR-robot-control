@@ -32,6 +32,44 @@ class Rdk2KukaControl:
         self.robot.setPoseTool(self.tool)
         self.robot.setSpeedJoints(joints_speed)
 
+    def bbox_corners(self):
+        # Bounding box의 8개 꼭지점 좌표를 계산
+        corners = [
+            (self.min_x, self.min_y, self.min_z),
+            (self.min_x, self.min_y, self.max_z),
+            (self.min_x, self.max_y, self.min_z),
+            (self.min_x, self.max_y, self.max_z),
+            (self.max_x, self.min_y, self.min_z),
+            (self.max_x, self.min_y, self.max_z),
+            (self.max_x, self.max_y, self.min_z),
+            (self.max_x, self.max_y, self.max_z)
+        ]
+
+        # 바운딩 박스의 중앙점 좌표를 계산
+        center_x = (self.min_x + self.max_x) / 2
+        center_y = (self.min_y + self.max_y) / 2
+        center_z = (self.min_z + self.max_z) / 2
+        center_point = (center_x, center_y, center_z)
+
+        # 중앙점을 꼭지점 목록에 추가
+        corners.append(center_point)
+
+        return corners
+
+    async def test_bbox(self):
+        self.RDK.setCollisionActive(COLLISION_OFF)
+        # test bbox
+        corners = self.bbox_corners()
+        for corner in corners:
+            # 각 꼭지점으로의 이동 명령을 생성합니다.
+            target_pose = transl(corner[0], corner[1], corner[2])
+            # RoboDK API를 사용하여 로봇의 TCP를 해당 꼭지점으로 이동시킵니다.
+            self.robot.MoveJ(target_pose)
+            print("Move BBOX!!!")
+            await asyncio.sleep(0.05)
+
+        self.RDK.setCollisionActive(COLLISION_ON)
+
     async def check_bbox(self):
         while not is_stop:
             relative_pose = self.tcp_obj.PoseWrt(self.reference)
@@ -81,6 +119,8 @@ class Rdk2KukaControl:
             await asyncio.sleep(0.004)
 
     async def run(self):
+        await self.test_bbox()
+
         # 각 기능을 독립적인 태스크로 실행
         bbox_task = asyncio.create_task(self.check_bbox())
         collision_task = asyncio.create_task(self.collision_detection())
@@ -99,7 +139,7 @@ class Rdk2KukaControl:
                 break  # while 루프 종료
 
             # 짧은 대기 시간을 주어 CPU 사용률을 관리
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.05)
 
         # 모든 태스크가 완료될 때까지 기다림
         await asyncio.gather(bbox_task, collision_task, order_task, return_exceptions=True)
