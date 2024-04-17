@@ -116,7 +116,7 @@ class Rdk2KukaControl:
             else:
                 print("Not order2kuka!")
 
-            await asyncio.sleep(0.004)
+            await asyncio.sleep(0.1)
 
     async def run(self):
         await self.test_bbox()
