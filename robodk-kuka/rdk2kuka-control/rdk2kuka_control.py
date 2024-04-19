@@ -105,7 +105,7 @@ class Rdk2KukaControl:
             start_time = time.time()
             joints = self.robot.SimulatorJoints()
             if (self.current_joints != joints) and (not self.is_collide and self.within_bbox):
-                # kuka_controller 에 이동 명령 전달
+                # # kuka_controller 에 이동 명령 전달
                 # print("Change joint values are: ", joints)
                 # self.robot.MoveJ(joints)
                 # print("Robot MoveJ")
@@ -119,7 +119,7 @@ class Rdk2KukaControl:
             await asyncio.sleep(0.1)
 
     async def run(self):
-        await self.test_bbox()
+        #await self.test_bbox()
 
         # 각 기능을 독립적인 태스크로 실행
         bbox_task = asyncio.create_task(self.check_bbox())
@@ -145,20 +145,6 @@ class Rdk2KukaControl:
         await asyncio.gather(bbox_task, collision_task, order_task, return_exceptions=True)
 
         print('Rdk2KukaControl Program has ended.')
-
-        # while not is_stop:
-        #     await self.check_bbox()
-        #     await self.collision_detection()
-        #
-        #     if not self.is_collide and self.within_bbox:
-        #         print("order2kuka")
-        #         await self.order2kuka()
-        #     else:
-        #         print("Can't order2kuka!!")
-        #         # 종료
-        #         #break
-        #
-        # print('Rdk2KukaControl Program has ended.')
 
 
 if __name__ == "__main__":
