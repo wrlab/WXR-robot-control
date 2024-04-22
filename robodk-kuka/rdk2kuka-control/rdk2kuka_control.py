@@ -23,9 +23,10 @@ class Rdk2KukaControl:
         # bool
         self.is_collide = False
         self.within_bbox = True
+        self.is_order2kuka = False
 
         # Boundary limits
-        self.min_x, self.max_x, self.min_y, self.max_y, self.min_z, self.max_z = [-90, 90, -90, 90, 10, 190]
+        self.min_x, self.max_x, self.min_y, self.max_y, self.min_z, self.max_z = [-90, 90, -90, 90, 210, 390]
 
         # Initial robot settings
         self.robot.setPoseFrame(self.reference)
@@ -105,11 +106,15 @@ class Rdk2KukaControl:
             start_time = time.time()
             joints = self.robot.SimulatorJoints()
             if (self.current_joints != joints) and (not self.is_collide and self.within_bbox):
-                # # kuka_controller 에 이동 명령 전달
-                # print("Change joint values are: ", joints)
-                # self.robot.MoveJ(joints)
-                # print("Robot MoveJ")
-                # self.current_joints = joints
+                if self.is_order2kuka:
+                    # kuka_controller 에 이동 명령 전달
+                    print("Change joint values are: ", joints)
+                    self.robot.MoveJ(joints)
+                    print("Robot MoveJ")
+                    self.current_joints = joints
+                else:
+                    print("Don't send data.")
+
 
                 # Execution time
                 print(f"Execution time: {time.time() - start_time} seconds")
@@ -119,7 +124,22 @@ class Rdk2KukaControl:
             await asyncio.sleep(0.1)
 
     async def run(self):
-        #await self.test_bbox()
+        user_input_bbox = input("test_bbox를 진행하시겠습니까? (yes/no): ")
+
+        user_input_order2kuka = input("KUKA로봇에 이동 명령을 전달합니까? (yes/no): ")
+
+        if user_input_bbox.lower() == "yes":
+            print("test_bbox를 진행합니다.")
+            await self.test_bbox()
+        else:
+            print("test_bbox를 취소합니다.")
+
+        if user_input_order2kuka.lower() == "yes":
+            print("KUKA로봇에게 이동 명령을 전달합니다.")
+            self.is_order2kuka = True
+        else:
+            print("KUKA로봇에게 이동 명령을 전달하지 않습니다..")
+            self.is_order2kuka = False
 
         # 각 기능을 독립적인 태스크로 실행
         bbox_task = asyncio.create_task(self.check_bbox())
