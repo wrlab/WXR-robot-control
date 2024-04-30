@@ -3,9 +3,8 @@ import struct
 import random
 import socket
 import time
-import json
 
-__version__ = '1.1.1'
+__version__ = '1.1.0'
 ENCODING = 'UTF-8'
 
 
@@ -128,42 +127,6 @@ class kukaClient:
             value_len,
             self.value
         )
-
-    # Test Code
-    # 24.04.19 작성
-    # RoboDKsync562.src KRL 프로그램과 연동하여 사용하기 위해 제작
-    # $config.dat 에서 선언한 변수와 RoboDKsync562.src KRL 프로그램의 Switch Case를 이용하기 위해 사용
-    # 명령 CASE와 명령 값을 매개변수로 하는 메소드
-    def write_multiple(self, commands, debug=True):
-        """
-        여러 변수와 그 값을 한 번에 전송합니다.
-
-        :param commands: 변수 이름과 값을 매핑한 딕셔너리
-        :param debug: 디버그 모드 활성화 여부
-        """
-        if not isinstance(commands, dict):
-            raise Exception('Commands must be a dictionary')
-
-        # commands 딕셔너리를 JSON 문자열로 인코딩
-        commands_json = json.dumps(commands).encode(ENCODING)
-        var_name = "MULTIPLE_COMMANDS".encode(ENCODING)
-        value = commands_json
-        var_name_len = len(var_name)
-        value_len = len(value)
-        flag = 1  # write 요청을 나타냄
-        req_len = var_name_len + 3 + 2 + value_len
-
-        # 패킷 생성
-        req = struct.pack('!HHBH' + str(var_name_len) + 's' + 'H' + str(value_len) + 's',
-                          self.msg_id, req_len, flag, var_name_len, var_name, value_len, value)
-
-        # 패킷 전송
-        self._send_req(req)
-        _value = self._read_rsp(debug)
-        if debug:
-            print(_value)
-        return _value
-
 
     def close(self):
         self.sock.close()

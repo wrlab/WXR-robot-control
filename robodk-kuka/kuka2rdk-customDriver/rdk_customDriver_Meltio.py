@@ -22,8 +22,8 @@ async def update_robot_angles(robot, stop_event):
     elif robot.Name() == 'KUKA KR 70 R2100-Precitec':
         kuka_client = kukaClient(Config_host2.HOST, Config_host2.PORT)
     print(f"KUKA client for {robot.Name()} IP: {kuka_client.ip}, Port: {kuka_client.port}")
-    # print("KUKA client IP: " + str(kuka_client.ip))
-    # print("KUKA client Port: " + str(kuka_client.port))
+    #print("KUKA client IP: " + str(kuka_client.ip))
+    #print("KUKA client Port: " + str(kuka_client.port))
     if not kuka_client.can_connect:
         print("KUKA 서버에 연결할 수 없습니다.")
         return
@@ -35,7 +35,7 @@ async def update_robot_angles(robot, stop_event):
             # 현재 TCP 좌표 값: POS_ACT
             joints_list = await parse_joint_data_corrected(response)
             print(f"Joints from server for {robot.Name()}: {joints_list}")
-            # print("서버로부터 받은 joints: " + str(joints_list))
+            #print("서버로부터 받은 joints: " + str(joints_list))
             # 24.03.20 기준 현재 KUKA로부터 받은 joints값을 그대로 RoboDK에 반영할 경우
             # 일부 축에 대해서 반대 방향으로 움직이는 문제 발생
             # 반대 방향으로 움직이는 축: A1, A4, A5
@@ -47,34 +47,6 @@ async def update_robot_angles(robot, stop_event):
             await asyncio.sleep(0.2)  # 비동기 대기
     finally:
         kuka_client.close()  # 클라이언트 연결 종료
-
-
-async def update_robot_angles_command_test(robot, stop_event):
-    kuka_client = None
-
-    if robot.Name() == 'KUKA KR 70 R2100-Meltio':
-        kuka_client = kukaClient(Config_host.HOST, Config_host.PORT)
-    elif robot.Name() == 'KUKA KR 70 R2100-Precitec':
-        kuka_client = kukaClient(Config_host2.HOST, Config_host2.PORT)
-    print(f"KUKA client for {robot.Name()} IP: {kuka_client.ip}, Port: {kuka_client.port}")
-    # print("KUKA client IP: " + str(kuka_client.ip))
-    # print("KUKA client Port: " + str(kuka_client.port))
-    if not kuka_client.can_connect:
-        print("KUKA 서버에 연결할 수 없습니다.")
-        return
-
-    # 로봇에 명령 전송
-    # 예: 로봇의 속도를 변경하고 특정 위치로 이동
-    commands = {
-        "COM_ACTION": "2",  # 관절 각도 값 이동 (PTP) 명령
-        "COM_E6AXIS": "{A1 45, A2 -30, A3 45, A4 60, A5 -45, A6 30}"  # 목표 조인트 각도
-    }
-    # 명령 전송
-    if kuka_client:
-        await kuka_client.write_multiple(commands)
-
-    # 일정 시간 대기
-    await asyncio.sleep(0.2)  # 비동기 대기
 
 
 async def main():
@@ -117,7 +89,6 @@ async def main():
     # 웹소켓 서버 태스크 생성
     robot_update_task_Precitec = asyncio.create_task(update_robot_angles(robot2, stop_event))
 
-    await update_robot_angles_command_test(robot1, stop_event)
     # 서버 및 로봇 제어 태스크를 기다림
     await asyncio.gather(
         robot_update_task_Precitec,
