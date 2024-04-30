@@ -49,10 +49,39 @@ async def update_robot_angles(robot, stop_event):
         kuka_client.close()  # 클라이언트 연결 종료
 
 
-async def update_robot_angles_command_test(robot, stop_event):
+# async def update_robot_angles_command_test(robot, stop_event):
+#     kuka_client = None
+#
+#     if robot.Name() == 'KUKA KR 70 R2100-Meltio':
+#         print("Meltio start")
+#         kuka_client = kukaClient(Config_host.HOST, Config_host.PORT)
+#     elif robot.Name() == 'KUKA KR 70 R2100-Precitec':
+#         kuka_client = kukaClient(Config_host2.HOST, Config_host2.PORT)
+#     print(f"KUKA client for {robot.Name()} IP: {kuka_client.ip}, Port: {kuka_client.port}")
+#     # print("KUKA client IP: " + str(kuka_client.ip))
+#     # print("KUKA client Port: " + str(kuka_client.port))
+#     if not kuka_client.can_connect:
+#         print("KUKA 서버에 연결할 수 없습니다.")
+#         return
+#
+#     # 로봇에 명령 전송
+#     # 예: 로봇의 속도를 변경하고 특정 위치로 이동
+#     commands = {
+#         "COM_ACTION": "2",  # 관절 각도 값 이동 (PTP) 명령
+#         "COM_E6AXIS": "{A1 45, A2 -30, A3 45, A4 60, A5 -45, A6 30}"  # 목표 조인트 각도
+#     }
+#     # 명령 전송
+#     if kuka_client:
+#         await kuka_client.write_multiple(commands)
+#
+#     # 일정 시간 대기
+#     await asyncio.sleep(0.2)  # 비동기 대기
+
+def update_robot_angles_command_test(robot, stop_event):
     kuka_client = None
 
     if robot.Name() == 'KUKA KR 70 R2100-Meltio':
+        print("Meltio start")
         kuka_client = kukaClient(Config_host.HOST, Config_host.PORT)
     elif robot.Name() == 'KUKA KR 70 R2100-Precitec':
         kuka_client = kukaClient(Config_host2.HOST, Config_host2.PORT)
@@ -71,12 +100,9 @@ async def update_robot_angles_command_test(robot, stop_event):
     }
     # 명령 전송
     if kuka_client:
-        await kuka_client.write_multiple(commands)
+         kuka_client.write_multiple(commands)
 
     # 일정 시간 대기
-    await asyncio.sleep(0.2)  # 비동기 대기
-
-
 async def main():
     # RoboDK 초기화
     RDK = Robolink()
@@ -101,10 +127,32 @@ async def main():
     robot1.setSpeedJoints(joints_speed)
     print("Set Meltio")
     # 웹소켓 서버 태스크 생성
-    robot_update_task_Meltio = asyncio.create_task(update_robot_angles(robot1, stop_event))
+    #robot_update_task_Meltio = asyncio.create_task(update_robot_angles(robot1, stop_event))
 
     await update_robot_angles_command_test(robot1, stop_event)
 
 # 웹소켓 통신 모듈 인스턴스 생성 및 서버 시작
 if __name__ == "__main__":
-    asyncio.run(main())
+    #asyncio.run(main())
+    RDK = Robolink()
+    # 로봇 연결: Meltio
+    robot1 = RDK.Item('KUKA KR 70 R2100-Meltio')
+    tool1 = robot1.Tool()
+    turntable1 = RDK.Item('2DOF Turn-table')
+    reference1 = RDK.Item('Baseline')
+
+    # 속도 변수 설정
+    linear_speed = 10
+    angular_speed = 180
+    joints_speed = 5
+    joints_accel = 40
+
+    # 인스턴스 생성 및 초기화
+    stop_event = Event()
+
+    # 초기 설정
+    robot1.setPoseFrame(reference1)
+    robot1.setPoseTool(tool1)
+    robot1.setSpeedJoints(joints_speed)
+    print("Set Meltio")
+    update_robot_angles_command_test(robot1, stop_event)

@@ -107,25 +107,25 @@ class Rdk2KukaControl:
             joints = self.robot.SimulatorJoints()
             print("current joints: ", self.current_joints)
             print("simulatorJoints: ", joints)
-            # if (self.current_joints != joints) and (not self.is_collide and self.within_bbox):
-            #     if self.is_order2kuka:
-            #         # kuka_controller 에 이동 명령 전달
-            #         #self.RDK.setRunMode(RUNMODE_RUN_ROBOT)
-            #         print("Change joint values are: ", joints)
-            #         self.robot.MoveJ(joints)
-            #         print("Robot MoveJ")
-            #         self.current_joints = joints
-            #         self.RDK.setRunMode(RUNMODE_SIMULATE)
-            #     else:
-            #         print("Don't send data.")
-            #
-            #
-            #     # Execution time
-            #     print(f"Execution time: {time.time() - start_time} seconds")
-            # else:
-            #     print("Not order2kuka!")
+            if (self.current_joints != joints) and (not self.is_collide and self.within_bbox):
+                if self.is_order2kuka:
+                    # kuka_controller 에 이동 명령 전달
+                    self.RDK.setRunMode(RUNMODE_RUN_ROBOT)
+                    print("Change joint values are: ", joints)
+                    self.robot.MoveJ(joints)
+                    print("Robot MoveJ")
+                    self.current_joints = joints
+                    self.RDK.setRunMode(1)
+                else:
+                    print("Don't send data.")
 
-            await asyncio.sleep(0.1)
+
+                # Execution time
+                print(f"Execution time: {time.time() - start_time} seconds")
+            else:
+                print("Not order2kuka!")
+
+            await asyncio.sleep(0.001)
 
     async def run(self):
         user_input_bbox = input("test_bbox를 진행하시겠습니까? (yes/no): ")
@@ -171,14 +171,3 @@ class Rdk2KukaControl:
         await asyncio.gather(bbox_task, collision_task, order_task, return_exceptions=True)
 
         print('Rdk2KukaControl Program has ended.')
-
-
-if __name__ == "__main__":
-    kuka_controller = Rdk2KukaControl()
-
-    # 비동기 이벤트 루프 시작
-    loop = asyncio.get_event_loop()
-    try:
-        loop.run_until_complete(kuka_controller.run())
-    finally:
-        loop.close()

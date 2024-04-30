@@ -1,20 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="afadd144-b642-4c6a-b635-e51280fa70cd" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../../.idea/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../.idea/GitProjects.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../kuka2rdk-customDriver/control_kuka_test.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../kuka2rdk-customDriver/rdk_customDriver_Meltio.py" beforeDir="false" afterPath="$PROJECT_DIR$/../kuka2rdk-customDriver/rdk_customDriver_Meltio.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/multi_robots.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/multi_robots.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Test2.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/testControls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../kuka2rdk-customDriver/control_kuka_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/../kuka2rdk-customDriver/control_kuka_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../kuka2rdk-customDriver/kukaClient.py" beforeDir="false" afterPath="$PROJECT_DIR$/../kuka2rdk-customDriver/kukaClient.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../kuka2rdk-customDriver/rdk_config_v2.py" beforeDir="false" afterPath="$PROJECT_DIR$/../kuka2rdk-customDriver/rdk_config_v2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rdk_webSocket_multi.py" beforeDir="false" afterPath="$PROJECT_DIR$/rdk_webSocket_multi.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rdk_wxr_server_multi.py" beforeDir="false" afterPath="$PROJECT_DIR$/rdk_wxr_server_multi.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../rdk2kuka-control/rdk2kuka_control.py" beforeDir="false" afterPath="$PROJECT_DIR$/../rdk2kuka-control/rdk2kuka_control.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -22,12 +21,19 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 4
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4
+}</component>
   <component name="ProjectId" id="2fRoqesBS8T9IPWNEEhvYAGNaAH" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -35,6 +41,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Python.rdk_webSocket_multi.executor": "Run",
     "Python.rdk_wxr_server_multi.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -59,5 +66,26 @@
       <updated>1713773444614</updated>
     </task>
     <servers />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/rdk_wxr_server_multi.py</url>
+          <line>6</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/rdk_wxr_server_multi.py</url>
+          <line>12</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/rdk_wxr_server_multi.py</url>
+          <line>15</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

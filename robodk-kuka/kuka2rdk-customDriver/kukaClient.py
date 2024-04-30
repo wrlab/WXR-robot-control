@@ -75,6 +75,7 @@ class kukaClient:
         header_size = struct.calcsize(header_format)
         body = self.rsp[header_size:-3]  # Exclude the 3-byte end marker
         is_ok = self.rsp[-3:]
+        debug = True
         if debug:
             print('Response:', self.rsp)
         # else:
@@ -159,8 +160,11 @@ class kukaClient:
 
         # 패킷 전송
         self._send_req(req)
+        print("req: ", req)
+        print("self._send_req: ", self._send_req(req))
         _value = self._read_rsp(debug)
         if debug:
+            print('Debug mode')
             print(_value)
         return _value
 
