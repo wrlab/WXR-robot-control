@@ -6,9 +6,6 @@ from robodk.robomath import *
 import time
 import threading
 
-socket_lock = threading.Lock()
-socket_lock2 = threading.Lock()
-
 
 def rad2degree(rad):
     return rad * 180 / math.pi
@@ -53,52 +50,13 @@ class WebSocketCommunication:
         self.reachable_event2 = asyncio.Event()
         self.ik_results2 = None
 
-        self.start_ik_threads()
+        # 이동 명령 버퍼
+        self.speed = 10 # default
+        self.init_pose1 = self.robot1.Pose()
+        self.current_pose1 = self.init_pose1.copy()
+        self.buffer = []
 
         print("webSocket Start!")
-
-    def start_ik_threads(self):
-        threading.Thread(target=self.ik_cal_thread, args=(1,)).start()
-        threading.Thread(target=self.ik_cal_thread, args=(2,)).start()
-
-    def ik_cal_thread(self, robot_id):
-        while True:
-            robot = getattr(self, f'robot{robot_id}')
-            tool = getattr(self, f'tool{robot_id}')
-            position = getattr(self, f'position{robot_id}')
-            rotation = getattr(self, f'rotation{robot_id}')
-
-            if position and rotation:
-                # IK 계산 로직
-                local_pose = self.cal_local_pose(position, rotation)
-
-                all_solutions = robot.SolveIK_All(local_pose, tool)
-
-                if len(all_solutions) == 0:
-                    print("IK unreachable!!")
-                    self.reachable1 = False
-                else:
-                    for j in all_solutions:
-                        conf_rlf = robot.JointsConfig(j).list()
-                        rear, lower, flip = conf_rlf[:3]
-
-                        if rear == 0 and lower == 0 and flip == 1:
-                            robot.MoveJ(j[:6])
-                            #robot.setJoints(j[:6])
-                            self.reachable1 = True
-                            print("IK reachable!!")
-                            # IK 결과를 인스턴스 변수에 저장
-                            setattr(self, f'ik_results{robot_id}', j[:6])
-                            break
-                        else:
-                            print("IK unreachable!!")
-                            self.reachable1 = False
-
-                # 다음 IK 계산을 위해 위치와 회전 데이터 초기화
-                setattr(self, f'position{robot_id}', None)
-                setattr(self, f'rotation{robot_id}', None)
-
-            time.sleep(0.001)  # 스레드가 너무 빠르게 반복하지 않도록 적당한 지연
 
     def cal_local_pose(self, position, rotation):
         local_pose = KUKA_2_Pose(
@@ -114,8 +72,9 @@ class WebSocketCommunication:
     async def handler(self, websocket):
         receiver_task = asyncio.create_task(self.receive_messages(websocket))
         sender_task = asyncio.create_task(self.send_joint_positions(websocket))
+        move_task = asyncio.create_task(self.move_tcp())
 
-        await asyncio.gather(receiver_task, sender_task)
+        await asyncio.gather(receiver_task, sender_task, move_task)
 
     async def receive_messages(self, websocket):
         async for message in websocket:
@@ -164,28 +123,97 @@ class WebSocketCommunication:
                 print("TCP2 Position: " + str(self.position2))
                 print("TCP2 Rotation: " + str(self.rotation2))
 
+            if data.get("command") == "move":
+                move_data = data.get("move")
+                if move_data:
+                    if move_data.get('x') is not None:
+                        self.buffer.append(f"move_x_{move_data['x']}")
+                    if move_data.get('y') is not None:
+                        self.buffer.append(f"move_y_{move_data['y']}")
+                    if move_data.get('z') is not None:
+                        self.buffer.append(f"move_z_{move_data['z']}")
+
+
+                    # if move_data.get('x') == '-':
+                    #     self.buffer.append('move_x_minus')
+                    # elif move_data.get('x') == '+':
+                    #     self.buffer.append('move_x_plus')
+                    # if move_data.get('y') == '-':
+                    #     self.buffer.append('move_y_minus')
+                    # elif move_data.get('y') == '+':
+                    #     self.buffer.append('move_y_plus')
+                    # if move_data.get('z') == '-':
+                    #     self.buffer.append('move_z_minus')
+                    # elif move_data.get('z') == '+':
+                    #     self.buffer.append('move_z_plus')
+
+            # if data.get("move") == "move_x_minus":
+            #     self.buffer.append('move_x_minus')
+            # elif data.get("move") == "move_x_plus":
+            #     self.buffer.append('move_x_plus')
+            # elif data.get("move") == "move_y_minus":
+            #     self.buffer.append('move_y_minus')
+            # elif data.get("move") == "move_y_plus":
+            #     self.buffer.append('move_y_plus')
+            # elif data.get("move") == "move_z_minus":
+            #     self.buffer.append('move_z_minus')
+            # elif data.get("move") == "move_z_plus":
+            #     self.buffer.append('move_z_plus')
+
+            if data.get("move") == "stop":
+                print("Received stop command")
+                self.buffer = []
+
+    async def move_tcp(self):
+        while True:
+            if self.buffer:
+                command = self.buffer.pop(0)
+                print(f"Executing command: {command}")
+                axis, direction = command.split('_')[1], command.split('_')[2]
+                delta = self.speed if direction == '+' else -self.speed
+
+                if axis == 'x':
+                    self.current_pose1 = self.current_pose1 * transl(delta, 0, 0)
+                elif axis == 'y':
+                    self.current_pose1 = self.current_pose1 * transl(0, delta, 0)
+                elif axis == 'z':
+                    self.current_pose1 = self.current_pose1 * transl(0, 0, delta)
+
+
+                # if command == 'move_x_minus':
+                #     self.current_pose1 = self.current_pose1 * transl(-self.speed, 0, 0)
+                # elif command == 'move_x_plus':
+                #     self.current_pose1 = self.current_pose1 * transl(self.speed, 0, 0)
+                # elif command == 'move_y_minus':
+                #     self.current_pose1 = self.current_pose1 * transl(0, -self.speed, 0)
+                # elif command == 'move_y_plus':
+                #     self.current_pose1 = self.current_pose1 * transl(0, self.speed, 0)
+                # elif command == 'move_z_minus':
+                #     self.current_pose1 = self.current_pose1 * transl(0, 0, -self.speed)
+                # elif command == 'move_z_plus':
+                #     self.current_pose1 = self.current_pose1 * transl(0, 0, self.speed)
+
+                # 로봇에 새 위치 데이터를 적용
+                self.robot1.MoveL(self.current_pose1)
+
+            await asyncio.sleep(0.001)  # 주기적으로 버퍼 확인
+
     async def send_joint_positions(self, websocket):
         print("send_joint_positions")
         while True:
             # await  self.reachable_event1.wait()  # reachable이 True가 될 때까지 대기
 
             # 관절 위치 전송 로직
-            # socket_lock.acquire()
             current_joints1 = self.robot1.Joints()
-            # print(current_joints1)
             current_tables1 = self.turntable1.Joints()
-            # socket_lock.release()
 
-            # socket_lock2.acquire()
             current_joints2 = self.robot2.Joints()
             current_tables2 = self.turntable2.Joints()
-            # socket_lock2.release()
 
             reachable1 = self.reachable1
 
             if not reachable1:
                 json_data3 = json.dumps(reachable1)
-                #data_np = np.array(json_data3)
                 print(json_data3)
                 await websocket.send(json_data3)
             else:
@@ -231,20 +259,6 @@ class WebSocketCommunication:
                 await websocket.send(json_data)
 
                 self.previous_joints2 = current_joints2
-
-            # turn-table 값 전달
-            # if not np.array_equal(current_tables2, self.previous_tables2) and not self.on_table2:
-            #     print("send_turntable_rotations of table[2]")
-            #     tables_np = np.array(current_tables2)
-            #     tables_flat = tables_np.flatten()
-            #     data2 = tables_flat.tolist()
-            #     json_data2 = json.dumps(data2)
-            #     await websocket.send(json_data2)
-            #     self.previous_tables2 = current_tables2
-
-            # json_data3 = json.dumps(reachable1)
-            # print(json_data3)
-            # await websocket.send(json_data3)
 
             # send_joint_positions에서 webSocket을 독점하는 것을 막기 위해
             await asyncio.sleep(0.00001)
