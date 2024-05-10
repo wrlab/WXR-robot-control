@@ -1,6 +1,5 @@
 cfg = {"HOST": "192.168.1.169", "PORT": 6894}
 cfg_host = {"HOST": "192.168.1.169", "PORT": 9000}
-
 from collections import namedtuple
 
 Config_server = namedtuple("Config", cfg.keys())(*cfg.values())

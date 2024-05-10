@@ -3,7 +3,6 @@ import websockets
 import numpy as np
 import json
 from robodk.robomath import *
-from robodk.robolink import *
 import time
 import threading
 
@@ -54,8 +53,6 @@ class WebSocketCommunication:
         self.reachable_event2 = asyncio.Event()
         self.ik_results2 = None
 
-        self.current_joints = self.robot1.SimulatorJoints()
-
         self.start_ik_threads()
 
         print("webSocket Start!")
@@ -66,7 +63,6 @@ class WebSocketCommunication:
 
     def ik_cal_thread(self, robot_id):
         while True:
-            start_time = time.time()
             robot = getattr(self, f'robot{robot_id}')
             tool = getattr(self, f'tool{robot_id}')
             position = getattr(self, f'position{robot_id}')
@@ -74,17 +70,9 @@ class WebSocketCommunication:
 
             if position and rotation:
                 # IK 계산 로직
-                #print('position: ', position)
-                #print('rotation: ', rotation)
                 local_pose = self.cal_local_pose(position, rotation)
-                #print('local_pose: ', local_pose)
-                all_solutions = robot.SolveIK_All(local_pose, tool)
-                #robot.MoveL(local_pose, False)
-                #print(f"Execution time: {time.time() - start_time} seconds")
-                #print('all_solutions!: ', all_solutions)
-                print(f"IK Execution time: {time.time() - start_time} seconds")
 
-                mid_time = time.time()
+                all_solutions = robot.SolveIK_All(local_pose, tool)
 
                 if len(all_solutions) == 0:
                     print("IK unreachable!!")
@@ -95,15 +83,10 @@ class WebSocketCommunication:
                         rear, lower, flip = conf_rlf[:3]
 
                         if rear == 0 and lower == 0 and flip == 1:
-                            robot.MoveJ(j[:6], False)
-                            #robot.MoveL(j[:6])
-                            # Execution time
+                            robot.MoveJ(j[:6])
                             #robot.setJoints(j[:6])
-                            print(f"Move joints Execution time: {time.time() - mid_time} seconds")
-                            print(f"Total Execution time: {time.time() - start_time} seconds")
                             self.reachable1 = True
-                            #print('robot IK: ', j[:6])
-                            #print("IK reachable!!")
+                            print("IK reachable!!")
                             # IK 결과를 인스턴스 변수에 저장
                             setattr(self, f'ik_results{robot_id}', j[:6])
                             break
@@ -131,16 +114,13 @@ class WebSocketCommunication:
     async def handler(self, websocket):
         receiver_task = asyncio.create_task(self.receive_messages(websocket))
         sender_task = asyncio.create_task(self.send_joint_positions(websocket))
-        #order_task = asyncio.create_task(self.order2kuka())
 
-        await asyncio.gather(receiver_task, sender_task
-                             #,order_task
-                             )
+        await asyncio.gather(receiver_task, sender_task)
 
     async def receive_messages(self, websocket):
         async for message in websocket:
             data = json.loads(message)
-            #self.robot1.Stop()
+
             if data.get("command") == "start_streaming":
                 print("Start streaming command received")
 
@@ -168,25 +148,21 @@ class WebSocketCommunication:
                 else:
                     joint_values = [-x1_degree, y2_degree]
                     self.turntable1.setJoints(joint_values)
-                #print(f"update_turntables")
+                print(f"update_turntables")
 
             if data.get("command") == "update_position":
-                #print("Get update_position")
+                print("Get update_position")
                 # 2024.01.02
                 self.position1 = data.get("position")
                 self.rotation1 = data.get("rotation")
-                #print("TCP1 Position: " + str(self.position1))
-                #print("TCP1 Rotation: " + str(self.rotation1))
 
             if data.get("command") == "update_position2":
-                #print("Get update_position2")
+                print("Get update_position2")
                 # 2024.03.08
                 self.position2 = data.get("position")
                 self.rotation2 = data.get("rotation")
-                #print("TCP2 Position: " + str(self.position2))
-                #print("TCP2 Rotation: " + str(self.rotation2))
-
-            #await asyncio.sleep(0.0001)
+                print("TCP2 Position: " + str(self.position2))
+                print("TCP2 Rotation: " + str(self.rotation2))
 
     async def send_joint_positions(self, websocket):
         print("send_joint_positions")
@@ -194,11 +170,11 @@ class WebSocketCommunication:
             # await  self.reachable_event1.wait()  # reachable이 True가 될 때까지 대기
 
             # 관절 위치 전송 로직
-            #socket_lock.acquire()
+            # socket_lock.acquire()
             current_joints1 = self.robot1.Joints()
             # print(current_joints1)
             current_tables1 = self.turntable1.Joints()
-            #socket_lock.release()
+            # socket_lock.release()
 
             # socket_lock2.acquire()
             current_joints2 = self.robot2.Joints()
@@ -272,30 +248,3 @@ class WebSocketCommunication:
 
             # send_joint_positions에서 webSocket을 독점하는 것을 막기 위해
             await asyncio.sleep(0.00001)
-
-    async def order2kuka(self):
-        while True:
-            start_time = time.time()
-            joints = self.robot1.SimulatorJoints()
-            print("current joints: ", self.current_joints)
-            print("simulatorJoints: ", joints)
-            #if self.current_joints != joints:
-            if not np.allclose(self.current_joints, joints, atol=0.1):
-                socket_lock.acquire()
-                # kuka_controller 에 이동 명령 전달
-                print("RunMode: ", self.rdk.RunMode())
-                self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
-                print("changed RunMode: ", self.rdk.RunMode())
-                print("Change joint values are: ", joints)
-                self.robot1.MoveJ(joints)
-                print("Robot MoveJ")
-                self.current_joints = joints
-                self.rdk.setRunMode(RUNMODE_SIMULATE)
-                socket_lock.release()
-
-                # Execution time
-                print(f"Execution time: {time.time() - start_time} seconds")
-            else:
-                print("Not order2kuka!")
-
-            await asyncio.sleep(1)
