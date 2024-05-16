@@ -107,23 +107,23 @@ class Rdk2KukaControl:
             joints = self.robot.SimulatorJoints()
             print("current joints: ", self.current_joints)
             print("simulatorJoints: ", joints)
-            # if (self.current_joints != joints) and (not self.is_collide and self.within_bbox):
-            #     if self.is_order2kuka:
-            #         # kuka_controller 에 이동 명령 전달
-            #         #self.RDK.setRunMode(RUNMODE_RUN_ROBOT)
-            #         print("Change joint values are: ", joints)
-            #         self.robot.MoveJ(joints)
-            #         print("Robot MoveJ")
-            #         self.current_joints = joints
-            #         self.RDK.setRunMode(RUNMODE_SIMULATE)
-            #     else:
-            #         print("Don't send data.")
-            #
-            #
-            #     # Execution time
-            #     print(f"Execution time: {time.time() - start_time} seconds")
-            # else:
-            #     print("Not order2kuka!")
+            if (self.current_joints != joints) and (not self.is_collide and self.within_bbox):
+                if self.is_order2kuka:
+                    # kuka_controller 에 이동 명령 전달
+                    #self.RDK.setRunMode(RUNMODE_RUN_ROBOT)
+                    print("Change joint values are: ", joints)
+                    self.robot.MoveJ(joints)
+                    print("Robot MoveJ")
+                    self.current_joints = joints
+                    self.RDK.setRunMode(RUNMODE_SIMULATE)
+                else:
+                    print("Don't send data.")
+
+
+                # Execution time
+                print(f"Execution time: {time.time() - start_time} seconds")
+            else:
+                print("Not order2kuka!")
 
             await asyncio.sleep(0.1)
 
