@@ -110,7 +110,7 @@ class WebSocketCommunication:
                 print(f"update_turntables")
 
             if data.get("command") == "update_position":
-                print("Get update_position")
+                #print("Get update_position")
                 # 2024.01.02
                 self.position1 = data.get("position")
                 self.rotation1 = data.get("rotation")
@@ -132,8 +132,6 @@ class WebSocketCommunication:
                         self.buffer.append(f"move_y_{move_data['y']}")
                     if move_data.get('z') is not None:
                         self.buffer.append(f"move_z_{move_data['z']}")
-
-
                     # if move_data.get('x') == '-':
                     #     self.buffer.append('move_x_minus')
                     # elif move_data.get('x') == '+':
@@ -159,7 +157,6 @@ class WebSocketCommunication:
             #     self.buffer.append('move_z_minus')
             # elif data.get("move") == "move_z_plus":
             #     self.buffer.append('move_z_plus')
-
             if data.get("move") == "stop":
                 print("Received stop command")
                 self.buffer = []
