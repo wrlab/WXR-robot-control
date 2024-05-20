@@ -1,23 +1,40 @@
 from robodk.robolink import *
 from robodk.robomath import *
+import math
 import time
 import asyncio
 
 
+def cal_local_pose(position, rotation):
+    local_pose = KUKA_2_Pose(
+        [position['x'], position['z'], position['y'],
+         rotation['x'], rotation['y'], rotation['z']])
+    return local_pose
+
 if __name__ == "__main__":
     RDK = Robolink()
     robot = RDK.Item('KUKA KR 70 R2100-Meltio')
-    tool = robot.Tool()
+
     reference = RDK.Item('Baseline')
     tcp_obj = RDK.Item('tcp_obj')
     bbox = RDK.Item('bbox')
 
-    print("current RunMode(): ", RDK.RunMode())
-    current_joints = robot.SimulatorJoints()
-    print("current Sim Joints: ", robot.SimulatorJoints())
+    current_pose = robot.Pose()
 
-    RDK.setRunMode(RUNMODE_RUN_ROBOT)
-    print("current Sim Joints: ", robot.SimulatorJoints())
-    print("current RunMode(): ", RDK.RunMode())
-    #joints = [0.3669306773580602, -84.24947731080498, 112.5832912167649, 4.3010636150456225, -28.56989649101972, -3.7847460949017755]
-    robot.MoveJ(robot.SimulatorJoints())
+    position = {
+        'x': current_pose.Pos()[0],
+        'y': current_pose.Pos()[1],
+        'z': current_pose.Pos()[2]}
+    rotation = {'x': 0.0, 'y': 0.0, 'z': 0.0}
+
+    print(position)
+
+    local_pose = cal_local_pose(position, rotation)
+    print(local_pose)
+    robot.setPose(local_pose)
+
+
+    print("TCP 각도가 수정되었습니다.")
+
+
+
