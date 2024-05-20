@@ -1,9 +1,8 @@
 from robodk.robolink import *
-from rdk_config_v2 import Config_host
-from rdk_config_v2 import Config_host2
+from rdk_config import Config_host
 import asyncio
 from asyncio import Event
-from kukaClient import kukaClient
+from proxyClient import kukaClient
 
 
 async def parse_joint_data_corrected(response):
@@ -19,8 +18,6 @@ async def update_robot_angles(robot, stop_event):
     kuka_client = None
     if robot.Name() == 'KUKA KR 70 R2100-Meltio':
         kuka_client = kukaClient(Config_host.HOST, Config_host.PORT)
-    elif robot.Name() == 'KUKA KR 70 R2100-Precitec':
-        kuka_client = kukaClient(Config_host2.HOST, Config_host2.PORT)
     print(f"KUKA client for {robot.Name()} IP: {kuka_client.ip}, Port: {kuka_client.port}")
     #print("KUKA client IP: " + str(kuka_client.ip))
     #print("KUKA client Port: " + str(kuka_client.port))
@@ -58,12 +55,6 @@ async def main():
     turntable1 = RDK.Item('2DOF Turn-table')
     reference1 = RDK.Item('Baseline')
 
-    # 로봇 연결: Precitec
-    robot2 = RDK.Item('KUKA KR 70 R2100-Precitec')
-    tool2 = robot2.Tool()
-    turntable2 = RDK.Item('2DOF Turn-table')
-    reference2 = RDK.Item('Baseline')
-
     # 속도 변수 설정
     linear_speed = 10
     angular_speed = 180
@@ -81,17 +72,8 @@ async def main():
     # 웹소켓 서버 태스크 생성
     robot_update_task_Meltio = asyncio.create_task(update_robot_angles(robot1, stop_event))
 
-    # 초기 설정
-    robot2.setPoseFrame(reference2)
-    robot2.setPoseTool(tool2)
-    robot2.setSpeedJoints(joints_speed)
-    print("Set Meltio")
-    # 웹소켓 서버 태스크 생성
-    robot_update_task_Precitec = asyncio.create_task(update_robot_angles(robot2, stop_event))
-
     # 서버 및 로봇 제어 태스크를 기다림
     await asyncio.gather(
-        robot_update_task_Precitec,
         robot_update_task_Meltio)
 
 
