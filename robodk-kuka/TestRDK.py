@@ -3,18 +3,11 @@ from robodk.robolink import *
 # RoboDK에 연결
 RDK = Robolink()
 
-# 특정 객체의 이름으로 객체를 찾음 (예: "MyObject")
-object_name = "untitled1"
-my_object = RDK.Item(object_name)
+robot = RDK.Item('KUKA KR 70 R2100-Meltio') # Get robot item.
+frame = RDK.Item('Baseline') # Get frame item.
+robot.setPoseFrame(frame) # Set the "frame" as the active reference frame.
 
-#bbox = my_object.BoundingBox()
-bounding = my_object.setParam("BoundingBox")
-#bounding.pop('size')
-print(bounding.pop('size'))
-print(bounding.pop('min'))
-# # bounding box로부터 width, height, depth 계산
-# width = bbox[1][0] - bbox[0][0]  # Xmax - Xmin
-# height = bbox[1][1] - bbox[0][1]  # Ymax - Ymin
-# depth = bbox[1][2] - bbox[0][2]  # Zmax - Zmin
-#
-# print(f"Width: {width}, Height: {height}, Depth: {depth}")
+current_pose = robot.Pose()
+print(current_pose)
+pose = robomath.xyzrpw_2_pose([10, 20, 30, 90, 20, 10]) # Define the XYZ position and RPW angles of the pose you would like the tool to take wrt the frame.
+robot.MoveJ(pose) # Move the robot to "pose".

@@ -57,9 +57,12 @@ class kukaClient:
         return _value
 
     def _send_req(self, req):
+        print("_send_req: ", req)
         self.rsp = None
         self.sock.sendall(req)
-        self.rsp = self.sock.recv(256)
+        print("sock.sendall(req)")
+        self.rsp = self.sock.recv(1024)
+        print("self.rsp: ", self.rsp)
 
     def _pack_read_req(self):
         var_name_len = len(self.varname)
@@ -141,38 +144,86 @@ class kukaClient:
     def move(self, motion_type, position, debug=True):
         if not isinstance(position, str):
             raise TypeError('포지션 값은 문자열이어야 합니다.')
-        self.position = position.encode('utf-16le')
-        # Motion Type:
-            # 1 - PTP
-            # 2 - LIN
-            # 3 - PTP_REL
-            # 4 - LIN_REL
+        print(position)
+        self.position = position.encode(ENCODING)  # 인코딩 방식 변경
         self.motion_type = motion_type
         return self._move_robot(debug)
 
     def _move_robot(self, debug):
         req = self._pack_move_req()
+        print("req ready!")
         self._send_req(req)
+        print("send ok")
         _value = self._read_rsp(debug)
         if debug:
             print(_value)
         return _value
 
-
     def _pack_move_req(self):
-        position_len = len(self.position) // 2 # UTF-16LE는 2바이트씩 사용
+        position_len = len(self.position)
         flag = 11
         req_len = 3 + 2 + position_len
 
         return struct.pack(
-            '!HHBHB' + str(position_len * 2) + 's',
-            self.msg_id,
-            req_len,
-            flag,
-            self.motion_type,
-            position_len,
-            self.position
+            '!HHBBH' + str(position_len) + 's',  # 올바른 패킷 형식으로 수정
+            self.msg_id,  # 메시지 ID
+            req_len,  # 요청 길이
+            flag,  # 플래그 (명령 유형)
+            self.motion_type,  # 모션 타입
+            position_len,  # 포지션 길이
+            self.position  # 포지션 데이터
         )
+
+    # def move(self, motion_type, position, debug=True):
+    #     if not isinstance(position, str):
+    #         raise TypeError('포지션 값은 문자열이어야 합니다.')
+    #     print(position)
+    #     #self.position = position.encode('utf-16le')
+    #     self.position = position.encode(ENCODING)
+    #     # Motion Type:
+    #         # 1 - PTP
+    #         # 2 - LIN
+    #         # 3 - PTP_REL
+    #         # 4 - LIN_REL
+    #     self.motion_type = motion_type
+    #     return self._move_robot(debug)
+    #
+    # def _move_robot(self, debug):
+    #     req = self._pack_move_req()
+    #     print("req ready!")
+    #     self._send_req(req)
+    #     print("send ok")
+    #     _value = self._read_rsp(debug)
+    #     if debug:
+    #         print(_value)
+    #     return _value
+    #
+    #
+    # def _pack_move_req(self):
+    #     position_len = len(self.position)
+    #     # // 2 # UTF-16LE는 2바이트씩 사용
+    #     flag = 11
+    #     req_len = 3 + 2 + position_len
+    #
+    #     return struct.pack(
+    #         '!HHBBH' + str(position_len) + 's',  # 올바른 패킷 형식으로 수정
+    #         self.msg_id,  # 메시지 ID
+    #         req_len,  # 요청 길이
+    #         flag,  # 플래그 (명령 유형)
+    #         self.motion_type,  # 모션 타입
+    #         position_len,  # 포지션 길이
+    #         self.position  # 포지션 데이터
+    #     )
+
+        # return struct.pack(
+        #     '!HHBBH' + str(position_len * 2) + 's',
+        #     self.msg_id,
+        #     req_len,
+        #     flag,
+        #     self.motion_type,
+        #     position_len,
+        #     self.position
+        # )
 
     def close(self):
         self.sock.close()
@@ -180,29 +231,39 @@ class kukaClient:
 
 # 사용 예제
 if __name__ == "__main__":
-    ip = '192.168.1.100'  # C3 Bridge Interface 서버 IP 주소
+    ip = '172.31.2.147'  # C3 Bridge Interface 서버 IP 주소
     port = 7000
-
+    #cfg_host = {"HOST": "172.31.2.147", "PORT": 7000}
     client = kukaClient(ip, port)
 
     if client.can_connect:
         print("서버에 연결 성공")
 
         # 변수 읽기 예제
-        response = client.read('$POS_ACT', debug=True)
-        print(f"현재 위치: {response}")
+        #response = client.read('$POS_ACT', debug=True)
+        #print(f"현재 위치: {response}")
+        stop_message = client.read('$STOPMESS')
+        if stop_message:
+            print(f"로봇이 정지 상태입니다: {stop_message}")
+        else:
+            print("로봇이 정지 상태가 아닙니다.")
 
         # 변수 쓰기 예제
-        client.write('$OV_PRO', '50', debug=True)
+        client.write('$OV_PRO', '30', debug=True)
 
         # 로봇 이동 명령 예제 (PTP 이동)
-        position = "{A1 0, A2 -90, A3 90, A4 0, A5 0, A6 0}"
+        position = '{A1 0, A2 -90, A3 90, A4 0, A5 0, A6 0}'
+        #position = '{X 1600.00, Y 70.00, Z 500.00, A 0, B 0, C 0}' #'{POS: X 1600.00, Y 70.00, Z 500.00, A 0, B 0, C 0}'
         client.move(1, position, debug=True)
 
         # 로봇 이동 명령 예제 (PTP_REL 이동)
-        position = "{X 10, Y 0, Z 0, A 0, B 0, C 0}"
-        client.move(3, position, debug=True)
+        #position = "{X 10, Y 0, Z 0, A 0, B 0, C 0}"
+        #client.move(3, position, debug=True)
     else:
         print("서버에 연결 실패")
 
     client.close()
+
+
+
+

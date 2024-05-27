@@ -50,6 +50,8 @@ async def main():
 if __name__ == "__main__":
     # 로봇 연결
     RDK = Robolink()
+
+
     robot1 = RDK.Item('KUKA KR 70 R2100-Meltio')
     tool1 = robot1.Tool()
     turntable1 = RDK.Item('2DOF Turn-table')
@@ -60,6 +62,7 @@ if __name__ == "__main__":
     turntable2 = RDK.Item('KUKA KP2-HV500')
     reference2 = RDK.Item('KP2-HV500')
 
+
     robots = [robot1, robot2]
     tools = [tool1, tool2]
     ext_tools = [turntable1, turntable2]
@@ -69,6 +72,9 @@ if __name__ == "__main__":
     angular_speed = 180
     joints_speed = 50
     joints_accel = 40
+
+    # RDK.Render(False)
+    # RDK.setRunMode(RUNMODE_RUN_ROBOT)
 
     # 웹소켓 서버 인스턴스 생성
     ws_comm = WebSocketCommunication(Config_server.HOST, Config_server.PORT, robots, tools, ext_tools, RDK)

@@ -33,74 +33,6 @@ class Rdk2KukaControl:
         self.robot.setPoseTool(self.tool)
         self.robot.setSpeedJoints(joints_speed)
 
-    def bbox_corners(self):
-        # Bounding box의 8개 꼭지점 좌표를 계산
-        corners = [
-            (self.min_x, self.min_y, self.min_z),
-            (self.min_x, self.min_y, self.max_z),
-            (self.min_x, self.max_y, self.min_z),
-            (self.min_x, self.max_y, self.max_z),
-            (self.max_x, self.min_y, self.min_z),
-            (self.max_x, self.min_y, self.max_z),
-            (self.max_x, self.max_y, self.min_z),
-            (self.max_x, self.max_y, self.max_z)
-        ]
-
-        # 바운딩 박스의 중앙점 좌표를 계산
-        center_x = (self.min_x + self.max_x) / 2
-        center_y = (self.min_y + self.max_y) / 2
-        center_z = (self.min_z + self.max_z) / 2
-        center_point = (center_x, center_y, center_z)
-
-        # 중앙점을 꼭지점 목록에 추가
-        corners.append(center_point)
-
-        return corners
-
-    async def test_bbox(self):
-        self.RDK.setCollisionActive(COLLISION_OFF)
-        # test bbox
-        corners = self.bbox_corners()
-        for corner in corners:
-            # 각 꼭지점으로의 이동 명령을 생성합니다.
-            target_pose = transl(corner[0], corner[1], corner[2])
-            # RoboDK API를 사용하여 로봇의 TCP를 해당 꼭지점으로 이동시킵니다.
-            self.robot.MoveJ(target_pose)
-            print("Move BBOX!!!")
-            await asyncio.sleep(0.05)
-
-        self.RDK.setCollisionActive(COLLISION_ON)
-
-    async def check_bbox(self):
-        # while not is_stop:
-        #     relative_pose = self.tcp_obj.PoseWrt(self.reference)
-        #     kukaPose = Pose_2_KUKA(relative_pose)
-        #     tcp_x, tcp_y, tcp_z = kukaPose[:3]
-        #
-        #     if any([
-        #         tcp_x < self.min_x, tcp_x > self.max_x,
-        #         tcp_y < self.min_y, tcp_y > self.max_y,
-        #         tcp_z < self.min_z, tcp_z > self.max_z
-        #     ]):
-        #         print("TCP out of range!!")
-        #         self.within_bbox = False
-        #     else:
-        #         print("TCP within range.")
-        #         self.within_bbox = True
-
-            await asyncio.sleep(0.004)
-
-    async def collision_detection(self):
-        while not is_stop:
-            if self.RDK.Collisions() > 0:
-                #print("Collided!!")
-                self.is_collide = True
-            else:
-                #print("is not Collided.")
-                self.is_collide = False
-
-            await asyncio.sleep(0.004)
-
     async def order2kuka(self):
         while not is_stop:
             start_time = time.time()
@@ -146,8 +78,6 @@ class Rdk2KukaControl:
             self.is_order2kuka = False
 
         # 각 기능을 독립적인 태스크로 실행
-        bbox_task = asyncio.create_task(self.check_bbox())
-        collision_task = asyncio.create_task(self.collision_detection())
         order_task = asyncio.create_task(self.order2kuka())
 
         self.RDK.setRunMode(RUNMODE_RUN_ROBOT)
@@ -161,8 +91,6 @@ class Rdk2KukaControl:
             else:
                 print("경계를 벗어나거나 충돌 발생, 프로그램 종료")
                 # 태스크를 취소
-                bbox_task.cancel()
-                collision_task.cancel()
                 order_task.cancel()
                 break  # while 루프 종료
 
@@ -170,7 +98,7 @@ class Rdk2KukaControl:
             await asyncio.sleep(0.05)
 
         # 모든 태스크가 완료될 때까지 기다림
-        await asyncio.gather(bbox_task, collision_task, order_task, return_exceptions=True)
+        await asyncio.gather(order_task, return_exceptions=True)
 
         print('Rdk2KukaControl Program has ended.')
 

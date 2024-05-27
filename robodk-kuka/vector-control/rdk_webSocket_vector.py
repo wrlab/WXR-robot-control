@@ -1,7 +1,10 @@
 import asyncio
+import math
+
 import websockets
 import numpy as np
 import json
+from robodk.robolink import *
 from robodk.robomath import *
 import time
 import threading
@@ -35,6 +38,8 @@ class WebSocketCommunication:
         self.on_table2 = False
 
         self.rdk = rdk
+        # self.rdk.Render(False)
+        # self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
 
         # IK 계산용 thread 생성 [robot1]
         self.position1 = None  # 위치 데이터 초기화
@@ -55,6 +60,7 @@ class WebSocketCommunication:
         self.init_pose1 = self.robot1.Pose()
         self.current_pose1 = self.init_pose1.copy()
         self.buffer = []
+        self.allow_range = 0.1745
 
         #self.start_ik_threads()
 
@@ -101,6 +107,51 @@ class WebSocketCommunication:
     #             setattr(self, f'rotation{robot_id}', None)
     #
     #         time.sleep(0.001)  # 스레드가 너무 빠르게 반복하지 않도록 적당한 지연
+    def set_rotation(self, rotate_data):
+        x_rotation = rotate_data.get('x')
+        y_rotation = rotate_data.get('y')
+        z_rotation = rotate_data.get('z')
+
+        # Initialize rotation matrices
+        x_rot_matrix = rotx(0)
+        y_rot_matrix = roty(0)
+        z_rot_matrix = rotz(0)
+
+        # Update rotation matrices with provided angles
+        if x_rotation is not None:
+            print("x rotation: ", x_rotation)
+            x_rot_matrix = rotx(x_rotation)  # Use radians for rotation
+        if y_rotation is not None:
+            print("y rotation: ", y_rotation)
+            z_rot_matrix = rotz(y_rotation)  # Use radians for rotation
+        if z_rotation is not None:
+            print("z rotation: ", z_rotation)
+            y_rot_matrix = roty(-z_rotation)  # Use radians for rotation
+
+        # Combine the rotations
+        rotation_matrix = x_rot_matrix * y_rot_matrix * z_rot_matrix
+
+        # Apply the rotation to the current pose
+        rotate_pose = transl(self.current_pose1.Pos()) * rotation_matrix
+
+        # Check if all rotations are within the allowed range
+        if (x_rotation is not None and -self.allow_range <= x_rotation <= self.allow_range and
+                y_rotation is not None and -self.allow_range <= y_rotation <= self.allow_range and
+                z_rotation is not None and -self.allow_range <= z_rotation <= self.allow_range):
+            self.rdk.Render(False)
+            self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
+            self.robot1.MoveJ(rotate_pose)
+            self.rdk.setRunMode(RUNMODE_SIMULATE)
+        else:
+            print("One or more rotation values are out of the allowed range. MoveJ command not executed.")
+            print()
+
+
+        # self.rdk.Render(False)
+        # self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
+        # self.robot1.MoveJ(rotate_pose)
+        # self.rdk.setRunMode(RUNMODE_SIMULATE)
+
 
     def cal_local_pose(self, position, rotation):
         local_pose = KUKA_2_Pose(
@@ -169,18 +220,19 @@ class WebSocketCommunication:
 
             if data.get("command") == "move":
                 move_data = data.get("move")
+                rotate_data = data.get("rotate")
                 move_command = 'move'
                 if move_data:
                     for axis in ['x', 'y', 'z']:
                         if move_data.get(axis) is not None:
                             move_command += f"_{axis}{move_data[axis]}"
                     self.buffer.append(move_command)
-                    # if move_data.get('x') is not None:
-                    #     self.buffer.append(f"move_x_{move_data['x']}")
-                    # if move_data.get('y') is not None:
-                    #     self.buffer.append(f"move_y_{move_data['y']}")
-                    # if move_data.get('z') is not None:
-                    #     self.buffer.append(f"move_z_{move_data['z']}")
+
+            if data.get("command") == "rotation":
+                rotate_data = data.get("rotate")
+                if rotate_data:
+                    print("rotate data: ", rotate_data)
+                    #self.set_rotation(rotate_data)
 
             if data.get("move") == "stop":
                 print("Received stop command")
@@ -191,36 +243,46 @@ class WebSocketCommunication:
             if self.buffer:
                 command = self.buffer.pop(0)
                 print(f"Executing command: {command}")
-                movements = command.split('_')[1:]  # ['x+', 'y+', 'z-']
-                deltas = {'x': 0, 'y': 0, 'z': 0}
+                if command.startswith('move'):
+                    movements = command.split('_')[1:]  # ['x+', 'y+', 'z-']
+                    deltas = {'x': 0, 'y': 0, 'z': 0}
+                    for movement in movements:
+                        axis = movement[0]
+                        direction = movement[1]
+                        delta = self.speed if direction == '+' else -self.speed
+                        deltas[axis] += delta
+                    # 이동 명령 실행
+                    self.current_pose1 = self.current_pose1 * transl(deltas['x'], deltas['y'], deltas['z'])
+                    print("Updated pose: ", self.current_pose1)
 
-                for movement in movements:
-                    axis = movement[0]
-                    direction = movement[1]
-                    delta = self.speed if direction == '+' else -self.speed
-                    deltas[axis] += delta
+                # elif command.startswith('rotate'):
+                #     rotations = command.split('_')[1:]  # ['x10', 'y-5', 'z20']
+                #     rotation_matrix = self.current_pose1
+                #     euler_rotations = {'x': 0, 'y': 0, 'z': 0}
+                #
+                #     for rotation in rotations:
+                #         axis = rotation[0]
+                #         direction = rotation[1]
+                #         euler = 1 if direction == '+' else -1
+                #         euler_rotations[axis] += math.radians(euler)
+                #         #rad_angle = math.radians(angle)  # 라디안으로 변환
+                #         if axis == 'x':
+                #             rotation_matrix = rotation_matrix * rotx(euler_rotations['x'])
+                #         elif axis == 'y':
+                #             rotation_matrix = rotation_matrix * roty(euler_rotations['y'])
+                #         elif axis == 'z':
+                #             rotation_matrix = rotation_matrix * rotz(euler_rotations['z'])
+                #
+                #     self.current_pose1 = rotation_matrix
+                #     print("Updated rotation: ", self.current_pose1)
+                self.rdk.Render(False)
+                self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
+                #self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
+                #self.robot1.setPose(self.current_pose1)
 
-                # 이동 명령 실행
-                self.current_pose1 = self.current_pose1 * transl(deltas['x'], deltas['y'], deltas['z'])
-                print("Updated pose: ", self.current_pose1)
                 self.robot1.MoveJ(self.current_pose1)
-
-                # axis, direction = command.split('_')[1], command.split('_')[2]
-                # print("axis: ", axis)
-                # print("direction: ", direction)
-                # delta = self.speed if direction == '+' else -self.speed
-                # print("delta: ", delta)
-                #
-                # if axis == 'x':
-                #     self.current_pose1 = self.current_pose1 * transl(delta, 0, 0)
-                # elif axis == 'y':
-                #     self.current_pose1 = self.current_pose1 * transl(0, delta, 0)
-                # elif axis == 'z':
-                #     self.current_pose1 = self.current_pose1 * transl(0, 0, delta)
-                #
-                # print("self.current_pose1: ", self.current_pose1)
-                # # 로봇에 새 위치 데이터를 적용
-                # self.robot1.MoveJ(self.current_pose1)
+                #self.robot1.MoveL(self.current_pose1)
+                self.rdk.setRunMode(RUNMODE_SIMULATE)
 
             await asyncio.sleep(0.001)  # 주기적으로 버퍼 확인
 
@@ -287,4 +349,4 @@ class WebSocketCommunication:
                 self.previous_joints2 = current_joints2
 
             # send_joint_positions에서 webSocket을 독점하는 것을 막기 위해
-            await asyncio.sleep(0.00001)
+            await asyncio.sleep(0.001)

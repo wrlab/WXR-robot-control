@@ -31,19 +31,21 @@ async def update_robot_angles(robot, stop_event):
         while not stop_event.is_set():
             # 서버로부터 데이터 요청
             # 현재 관절 각도 값: AXIS_ACT_MEAS
-            response = kuka_client.read("AXIS_ACT_MEAS", False)
+            #response = kuka_client.read("AXIS_ACT_MEAS", False)
+            response = kuka_client.read("AXIS_ACT", True)
+            print(response)
             # 현재 TCP 좌표 값: POS_ACT
-            joints_list = await parse_joint_data_corrected(response)
-            print(f"Joints from server for {robot.Name()}: {joints_list}")
+            # joints_list = await parse_joint_data_corrected(response)
+            # print(f"Joints from server for {robot.Name()}: {joints_list}")
             # print("서버로부터 받은 joints: " + str(joints_list))
             # 24.03.20 기준 현재 KUKA로부터 받은 joints값을 그대로 RoboDK에 반영할 경우
             # 일부 축에 대해서 반대 방향으로 움직이는 문제 발생
             # 반대 방향으로 움직이는 축: A1, A4, A5
             # 원인 파악 결과 KUKA 로봇 컨트롤러에서 해당 축에 대하여 방향을 변경함
-            a, b, c = -joints_list[0], -joints_list[3], -joints_list[5]
-            joints_list[0], joints_list[3], joints_list[5] = a, b, c
-            print("실제 움직임에 받게 변경한 joints: " + str(joints_list))
-            robot.setJoints(joints_list[:6])
+            # a, b, c = -joints_list[0], -joints_list[3], -joints_list[5]
+            # joints_list[0], joints_list[3], joints_list[5] = a, b, c
+            # print("실제 움직임에 받게 변경한 joints: " + str(joints_list))
+            # robot.setJoints(joints_list[:6])
             await asyncio.sleep(0.2)  # 비동기 대기
     finally:
         kuka_client.close()  # 클라이언트 연결 종료
@@ -62,6 +64,7 @@ async def update_robot_angles_command_test(robot, stop_event):
     if not kuka_client.can_connect:
         print("KUKA 서버에 연결할 수 없습니다.")
         return
+
 
     # 로봇에 명령 전송
     # 예: 로봇의 속도를 변경하고 특정 위치로 이동
@@ -109,18 +112,18 @@ async def main():
     # 웹소켓 서버 태스크 생성
     robot_update_task_Meltio = asyncio.create_task(update_robot_angles(robot1, stop_event))
 
-    # 초기 설정
-    robot2.setPoseFrame(reference2)
-    robot2.setPoseTool(tool2)
-    robot2.setSpeedJoints(joints_speed)
-    print("Set Precitec")
-    # 웹소켓 서버 태스크 생성
-    robot_update_task_Precitec = asyncio.create_task(update_robot_angles(robot2, stop_event))
+    # # 초기 설정
+    # robot2.setPoseFrame(reference2)
+    # robot2.setPoseTool(tool2)
+    # robot2.setSpeedJoints(joints_speed)
+    # print("Set Precitec")
+    # # 웹소켓 서버 태스크 생성
+    # robot_update_task_Precitec = asyncio.create_task(update_robot_angles(robot2, stop_event))
 
     #await update_robot_angles_command_test(robot1, stop_event)
     # 서버 및 로봇 제어 태스크를 기다림
     await asyncio.gather(
-        robot_update_task_Precitec,
+        #robot_update_task_Precitec,
         robot_update_task_Meltio)
 
 

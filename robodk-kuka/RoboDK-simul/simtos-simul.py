@@ -3,6 +3,8 @@ from robodk.robodialogs import *
 from robodk.robofileio import *
 from robodk.robolink import *
 
+# 24.04 SIMTOS 전시 컨테츠 용도로 제작한 RoboDK 시뮬레이션
+
 RDK = Robolink()
 robot1 = RDK.Item('KUKA KR 70 R2100 Meltio')
 robot2 = RDK.Item('KUKA KR 70 R2100 Precitec')
