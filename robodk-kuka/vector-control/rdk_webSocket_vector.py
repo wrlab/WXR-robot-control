@@ -276,13 +276,13 @@ class WebSocketCommunication:
                 #     self.current_pose1 = rotation_matrix
                 #     print("Updated rotation: ", self.current_pose1)
                 self.rdk.Render(False)
-                self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
+                #self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
                 #self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
                 #self.robot1.setPose(self.current_pose1)
 
                 self.robot1.MoveJ(self.current_pose1)
                 #self.robot1.MoveL(self.current_pose1)
-                self.rdk.setRunMode(RUNMODE_SIMULATE)
+                #self.rdk.setRunMode(RUNMODE_SIMULATE)
 
             await asyncio.sleep(0.001)  # 주기적으로 버퍼 확인
 
