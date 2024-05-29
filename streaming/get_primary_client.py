@@ -1,6 +1,9 @@
 import socket
 import struct
+import logging
+import argparse
 from dataType import MessageType
+from collections import defaultdict
 
 
 def parse(buffer):
@@ -11,7 +14,7 @@ def parse(buffer):
     )
     buffer = buffer[fixed_header_size:message_size]
 
-    parsed_data = {}
+    parsed_data = defaultdict(lambda: {})
 
     if message_type == MessageType.ROBOT_STATE.value:
         while buffer:
@@ -20,10 +23,8 @@ def parse(buffer):
 
             if package_type == 0:
                 fmt = "!Q???????BBdddB"
-                data_length = struct.calcsize(fmt)
-                parsed_data["robot_mode_data"] = struct.unpack(
-                    fmt, buffer[:data_length]
-                )
+                fmt_size = struct.calcsize(fmt)
+                parsed_data["robot_mode_data"] = struct.unpack(fmt, buffer[:fmt_size])
 
             if package_type == 1:
                 fmt = "!dddffffB"
@@ -44,7 +45,7 @@ def parse(buffer):
                 parsed_data["masterboard_data"] = struct.unpack(fmt, buffer[:fmt_size])
 
             if package_type == 4:
-                fmt = "!ddddddddd"
+                fmt = "!ddd ddd ddd ddd"
                 fmt_size = struct.calcsize(fmt)
                 parsed_data["cartesian_info"] = struct.unpack(fmt, buffer[:fmt_size])
 
@@ -104,14 +105,60 @@ def parse(buffer):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("host", type=str, help="UR5 IP Address")
+    parser.add_argument("port", type=int, help="UR5 Port")
+
+    args = parser.parse_args()
+
+    logging.basicConfig(
+        format="%(asctime)s.%(msecs)06d %(levelname)s:%(message)s",
+        level=logging.DEBUG,
+        datefmt="%m/%d/%Y %I:%M:%S",
+    )
+
+    logging.info(f"Connecting to the primary client [{args.host}:{args.port}]")
     socket_obj = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    socket_obj.connect(("203.255.251.39", 12401))
+    socket_obj.connect((args.host, args.port))
 
     with socket_obj as s:
         while True:
             buffer = s.recv(4096)
             ur_data = parse(buffer)
-            print(ur_data)
+
+            logging.info(
+                [
+                    q_actual
+                    for (
+                        q_actual,
+                        q_target,
+                        qd_actual,
+                        l_actual,
+                        V_actual,
+                        T_motor,
+                        T_micro,
+                        jointMode,
+                    ) in ur_data["joint_data"]
+                ]
+            )
+
+            if ur_data["cartesian_info"]:
+                (
+                    X,
+                    Y,
+                    Z,
+                    Rx,
+                    Ry,
+                    Rz,
+                    TCPOffsetX,
+                    TCPOffsetY,
+                    TCPOffsetZ,
+                    TCPOffsetRx,
+                    TCPOffsetRy,
+                    TCPOffsetRz,
+                ) = ur_data["cartesian_info"]
+
+                logging.info(f"{[X, Y, Z]}")
 
 
 if __name__ == "__main__":
