@@ -1,0 +1,18 @@
+def test_urp():
+  set_analog_inputrange(0, 0)
+  set_analog_inputrange(1, 0)
+  set_analog_outputdomain(0, 0)
+  set_analog_outputdomain(1, 0)
+  set_tool_voltage(24)
+  set_runstate_outputs([])
+  set_payload(0.0)
+  set_gravity([0.0, 0.0, 9.82])
+  while True:
+  $ 0 Robot Program
+  $ 1 MoveJ
+  $ 2 Waypoint_1
+  movej([-0.7601482324296471, -1.9284112483400442, 2.4200850009312065, -2.13148960204731, -1.562351390833685, -0.9523963238633675], a=1.3962634015954636, v=1.0471975511965976)
+  $ 3 Waypoint_2
+  movej([-0.7601145807261123, -1.925313457229536, 1.4271208291636501, -1.1406326407517442, -1.5621569587688118, -0.9518539657810257], a=1.3962634015954636, v=1.0471975511965976)
+  end
+  end

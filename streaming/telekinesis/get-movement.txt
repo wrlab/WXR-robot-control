@@ -1,0 +1,27 @@
+ Program
+   BeforeStart
+     MoveJ
+       Waypoint_1
+     setp≔p[0,0,0,0,0,0]
+     movement≔ False 
+   Robot Program
+     If setp ≟p[0,0,0,0,0,0]
+       movement≔ False 
+     ElseIf setp[0] == 0 and setp[1] == 0 and setp[2] == 0
+       movement≔ False 
+     Else
+       movement≔ True 
+     If movement
+       MoveL
+         setp
+     sync()
+   Thread_1
+     tmp≔p[0,0,0,0,0,0]
+     tmp[0]=read_input_float_register(0)
+     tmp[1]=read_input_float_register(1)
+     tmp[2]=read_input_float_register(2)
+     tmp[3]=read_input_float_register(3)
+     tmp[4]=read_input_float_register(4)
+     tmp[5]=read_input_float_register(5)
+     setp≔tmp
+     sync()

@@ -1,0 +1,29 @@
+ Program
+   BeforeStart
+     time_count≔0
+     temp_joint≔[0,0,0,0,0,0]
+     target_joint≔p[0,0,0,0,0,0]
+     data_recv_len≔6
+     host≔"127.0.0.1"
+     port_no≔12345
+     open≔socket_open(host, port_no)
+     Loop open≟False
+       open≔socket_open(host, port_no)
+     target_pos≔p[0,0,0,0,3.14,0]
+     counter≔0
+   Robot Program
+     send_to_server≔"send_to_server"
+     socket_send_string(send_to_server)
+     recv_from_serv≔socket_read_ascii_float(data_recv_len)
+     Loop recv_from_serv[0]≠data_recv_len
+       recv_from_serv≔socket_read_ascii_float(data_recv_len)
+     Loop counter < data_recv_len
+       target_pos[counter]=recv_from_serv[counter+1]
+       counter≔counter+1
+     counter≔0
+     movej(get_inverse_kin(target_pos))
+     sync()
+   Thread_1
+     time_count=time_count+1
+     time_sec≔time_count / 125
+     sync()
