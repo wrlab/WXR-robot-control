@@ -61,6 +61,9 @@ class WebSocketCommunication:
         self.kp3 = 4 # 3단계 위치 보정
         self.kd3 = 4.2 # 3단계 속도 보정
         self.u3_plus = 0.1 # 3단계 슬라이딩 모드 스위칭
+        self.home = [0, -90, 90, 0, 0, 0]
+        #self.target_joints_rad = [radians(joint) for joint in self.home]
+        #print(self.target_joints_rad)
 
         self.start_ik_threads()
 
@@ -80,8 +83,33 @@ class WebSocketCommunication:
 
             if position and rotation:
                 current_pose = robot.Pose()
+                print("rotation: ", rotation)
                 new_pose = self.cal_new_pose(current_pose, position, rotation, robot, robot_id)
-                robot.MoveJ(new_pose)
+                print("new_pose: ", new_pose)
+                all_solutions = robot.SolveIK_All(new_pose, tool)
+                if len(all_solutions) == 0:
+                    print("There are no all_solutions ")
+                else:
+                    print("all_solutions: ", len(all_solutions))
+                    for j in all_solutions:
+                        conf_rlf = robot.JointsConfig(j).list()
+                        rear, lower, flip = conf_rlf[:3]
+                        if rear == 0 and lower == 0 and flip == 1:
+                            print("Front, elbow up, flip solution")
+                            try:
+                                robot.MoveJ(j)
+                                break
+                            except StoppedError as e:
+                                print(f"Collision detected for robot {robot_id}, waiting to retry")
+                                robot.MoveJ(self.home)
+                                # while True:
+                                #     try:
+                                #         time.sleep(1)
+                                #         robot.MoveJ(self.home)
+                                #         break
+                                #     except StoppedError:
+                                #         print("Still in collision, waiting...")
+                                #         continue
 
             time.sleep(self.Ts)
 
@@ -91,9 +119,18 @@ class WebSocketCommunication:
              rotation['x'], rotation['y'], rotation['z']])
         return local_pose
 
+    def get_rotation_mat(self, pose):
+        # # Pose 객체에서 회전 행렬을 추출
+        # rotation_matrix = pose[:3, :3]
+        # Pose 객체에서 회전 행렬을 추출
+        rotation_matrix = np.array(pose).reshape(4, 4)[:3, :3]
+        return rotation_matrix
+
     def cal_new_pose(self, current_pose, position, rotation, robot, robot_id):
         # 목표 위치와 회전을 로컬 포즈로 변환
         local_pose = self.cal_local_pose(position, rotation)
+
+        #tool = getattr(self, f'tool{robot_id}')
 
         # 목표 위치와 현재 위치의 차이 계산
         target_position = [local_pose.Pos()[0], local_pose.Pos()[1], local_pose.Pos()[2]]
@@ -107,15 +144,35 @@ class WebSocketCommunication:
             sliding_term = self.u3_plus * error
 
         # 관절 속도 추정
-        joint_velocities = self.get_robot_vel(robot_id)
+        #joint_velocities = self.get_robot_vel(robot_id)
 
         # 위치 보정 신호 계산
         velocity_command = self.kp3 * error + sliding_term
 
         # 목표 자세 계산
         new_position = np.array(current_pose.Pos()) + velocity_command * self.Ts
+        print("new_position: ", new_position)
+
+        x_rotation = rotation.get('x')
+        y_rotation = rotation.get('y')
+        z_rotation = rotation.get('z')
+
+        # # Initialize rotation matrices
+        # x_rot_matrix = rotx(0)
+        # y_rot_matrix = roty(0)
+        # z_rot_matrix = rotz(0)
+
+        x_rot_matrix = rotx(x_rotation)  # Use radians for rotation
+        z_rot_matrix = rotz(y_rotation)  # Use radians for rotation
+        y_rot_matrix = roty(-z_rotation)  # Use radians for rotation
+        rotation_matrix = x_rot_matrix * y_rot_matrix * z_rot_matrix
+
         new_pose = current_pose
         new_pose.setPos(new_position)
+
+        # Apply the rotation to the current pose
+        new_pose = transl(new_pose.Pos()) * rotation_matrix
+        print("new_pose: ", new_pose)
 
         return new_pose
 
@@ -135,6 +192,18 @@ class WebSocketCommunication:
         setattr(self, f'previous_joints{robot_id}', current_joints)
 
         return joint_velocities
+
+    def set_rotation(self, rotate_date):
+        x_rot = rotate_date.get('x')
+        y_rot = rotate_date.get('y')
+        z_rot = rotate_date.get('z')
+
+        # Initialize rotation matrices
+        x_rot_matrix = rotx(0)
+        y_rot_matrix = roty(0)
+        z_rot_matrix = rotz(0)
+
+
 
     def start_server(self):
         server = websockets.serve(self.handler, self.host, self.port)
@@ -189,7 +258,7 @@ class WebSocketCommunication:
                 self.position1 = data.get("position")
                 self.rotation1 = data.get("rotation")
                 #print("TCP1 Position: " + str(self.position1))
-                #print("TCP1 Rotation: " + str(self.rotation1))
+                print("TCP1 Rotation: " + str(self.rotation1))
 
             if data.get("command") == "update_position2":
                 #print("Get update_position2")

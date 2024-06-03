@@ -56,13 +56,7 @@ class kukaClient:
             print(_value)
         return _value
 
-    def _send_req(self, req):
-        print("_send_req: ", req)
-        self.rsp = None
-        self.sock.sendall(req)
-        print("sock.sendall(req)")
-        self.rsp = self.sock.recv(1024)
-        print("self.rsp: ", self.rsp)
+
 
     def _pack_read_req(self):
         var_name_len = len(self.varname)
@@ -143,10 +137,11 @@ class kukaClient:
 
     def move(self, motion_type, position, debug=True):
         if not isinstance(position, str):
-            raise TypeError('포지션 값은 문자열이어야 합니다.')
-        print(position)
-        self.position = position.encode(ENCODING)  # 인코딩 방식 변경
+            raise TypeError('Position values must be STRING.')
+        print("Position (original): ", position)
+        self.position = position.encode('utf-16le')  # Wide format (UTF-16LE)
         self.motion_type = motion_type
+        print("Position (encoded): ", self.position.hex())  # Print encoded position in hex for debugging
         return self._move_robot(debug)
 
     def _move_robot(self, debug):
@@ -154,25 +149,51 @@ class kukaClient:
         print("req ready!")
         self._send_req(req)
         print("send ok")
-        _value = self._read_rsp(debug)
+        _value = self._read_rsp_move(debug)
         if debug:
             print(_value)
         return _value
 
     def _pack_move_req(self):
         position_len = len(self.position)
-        flag = 11
+        flag = 11  # Wide format version of CommandMotion
         req_len = 3 + 2 + position_len
 
         return struct.pack(
-            '!HHBBH' + str(position_len) + 's',  # 올바른 패킷 형식으로 수정
-            self.msg_id,  # 메시지 ID
-            req_len,  # 요청 길이
-            flag,  # 플래그 (명령 유형)
-            self.motion_type,  # 모션 타입
-            position_len,  # 포지션 길이
-            self.position  # 포지션 데이터
+            '!HHBBH' + str(position_len) + 's',
+            self.msg_id,  # Tag ID
+            req_len,  # Message Length
+            flag,  # Message Type
+            self.motion_type,  # Motion Type
+            position_len,  # Length of Position String (in characters)
+            self.position  # Positon String
         )
+
+    def _send_req(self, req):
+        print("_send_req: ", req)
+        self.rsp = None
+        try:
+            self.sock.sendall(req)
+            print("sock.sendall(req)")
+            self.rsp = self.sock.recv(1024)
+            print("self.rsp: ", self.rsp)
+        except socket.timeout:
+            print("Socket timeout occurred. No response received.")
+        except socket.error as e:
+            print(f"Socket error: {e}")
+
+    def _read_rsp_move(self, debug=False):
+        if self.rsp is None:
+            return None
+        header_format = '!HHBH'
+        header_size = struct.calcsize(header_format)
+        body = self.rsp[header_size:-3]  # Exclude the 3-byte end marker
+        is_ok = self.rsp[-3:]
+        if debug:
+            print('Response:', self.rsp)
+        if is_ok.endswith(b'\x01'):
+            self.msg_id = (self.msg_id + 1) % 65536
+            return body.decode('utf-16le')
 
     # def move(self, motion_type, position, debug=True):
     #     if not isinstance(position, str):

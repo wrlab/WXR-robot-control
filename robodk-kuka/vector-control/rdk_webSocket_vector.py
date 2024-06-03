@@ -66,47 +66,6 @@ class WebSocketCommunication:
 
         print("webSocket Start!")
 
-    # def start_ik_threads(self):
-    #     threading.Thread(target=self.ik_cal_thread, args=(1,)).start()
-    #
-    # def ik_cal_thread(self, robot_id):
-    #     while True:
-    #         robot = getattr(self, f'robot{robot_id}')
-    #         tool = getattr(self, f'tool{robot_id}')
-    #         position = getattr(self, f'position{robot_id}')
-    #         rotation = getattr(self, f'rotation{robot_id}')
-    #
-    #         if position and rotation:
-    #             # IK 계산 로직
-    #             local_pose = self.cal_local_pose(position, rotation)
-    #
-    #             all_solutions = robot.SolveIK_All(local_pose, tool)
-    #
-    #             if len(all_solutions) == 0:
-    #                 print("IK unreachable!!")
-    #                 self.reachable1 = False
-    #             else:
-    #                 for j in all_solutions:
-    #                     conf_rlf = robot.JointsConfig(j).list()
-    #                     rear, lower, flip = conf_rlf[:3]
-    #
-    #                     if rear == 0 and lower == 0 and flip == 1:
-    #                         robot.MoveJ(j[:6])
-    #                         #robot.setJoints(j[:6])
-    #                         self.reachable1 = True
-    #                         print("IK reachable!!")
-    #                         # IK 결과를 인스턴스 변수에 저장
-    #                         setattr(self, f'ik_results{robot_id}', j[:6])
-    #                         break
-    #                     else:
-    #                         print("IK unreachable!!")
-    #                         self.reachable1 = False
-    #
-    #             # 다음 IK 계산을 위해 위치와 회전 데이터 초기화
-    #             setattr(self, f'position{robot_id}', None)
-    #             setattr(self, f'rotation{robot_id}', None)
-    #
-    #         time.sleep(0.001)  # 스레드가 너무 빠르게 반복하지 않도록 적당한 지연
     def set_rotation(self, rotate_data):
         x_rotation = rotate_data.get('x')
         y_rotation = rotate_data.get('y')
@@ -144,7 +103,6 @@ class WebSocketCommunication:
             self.rdk.setRunMode(RUNMODE_SIMULATE)
         else:
             print("One or more rotation values are out of the allowed range. MoveJ command not executed.")
-            print()
 
 
         # self.rdk.Render(False)
@@ -232,7 +190,7 @@ class WebSocketCommunication:
                 rotate_data = data.get("rotate")
                 if rotate_data:
                     print("rotate data: ", rotate_data)
-                    #self.set_rotation(rotate_data)
+                    self.set_rotation(rotate_data)
 
             if data.get("move") == "stop":
                 print("Received stop command")
@@ -255,26 +213,6 @@ class WebSocketCommunication:
                     self.current_pose1 = self.current_pose1 * transl(deltas['x'], deltas['y'], deltas['z'])
                     print("Updated pose: ", self.current_pose1)
 
-                # elif command.startswith('rotate'):
-                #     rotations = command.split('_')[1:]  # ['x10', 'y-5', 'z20']
-                #     rotation_matrix = self.current_pose1
-                #     euler_rotations = {'x': 0, 'y': 0, 'z': 0}
-                #
-                #     for rotation in rotations:
-                #         axis = rotation[0]
-                #         direction = rotation[1]
-                #         euler = 1 if direction == '+' else -1
-                #         euler_rotations[axis] += math.radians(euler)
-                #         #rad_angle = math.radians(angle)  # 라디안으로 변환
-                #         if axis == 'x':
-                #             rotation_matrix = rotation_matrix * rotx(euler_rotations['x'])
-                #         elif axis == 'y':
-                #             rotation_matrix = rotation_matrix * roty(euler_rotations['y'])
-                #         elif axis == 'z':
-                #             rotation_matrix = rotation_matrix * rotz(euler_rotations['z'])
-                #
-                #     self.current_pose1 = rotation_matrix
-                #     print("Updated rotation: ", self.current_pose1)
                 self.rdk.Render(False)
                 #self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
                 #self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
