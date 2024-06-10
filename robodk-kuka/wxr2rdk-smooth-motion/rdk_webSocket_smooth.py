@@ -58,22 +58,24 @@ class WebSocketCommunication:
 
         # smooth parameters
         self.Ts = 0.01 # sampling 주기
-        self.kp3 = 4 # 3단계 위치 보정
+        self.kp3 = 30 # 3단계 위치 보정
         self.kd3 = 4.2 # 3단계 속도 보정
-        self.u3_plus = 0.1 # 3단계 슬라이딩 모드 스위칭
+        #self.u3_plus = 0.01 # 3단계 슬라이딩 모드 스위칭
+        self.u3_plus = 0.0  # 3단계 슬라이딩 모드 스위칭
         self.home = [0, -90, 90, 0, 0, 0]
         #self.target_joints_rad = [radians(joint) for joint in self.home]
         #print(self.target_joints_rad)
 
-        self.start_ik_threads()
+        #self.start_ik_threads()
 
         print("webSocket Start!")
 
-    def start_ik_threads(self):
-        threading.Thread(target=self.tool_teleoperation, args=(1,)).start()
-        threading.Thread(target=self.tool_teleoperation, args=(2,)).start()
+    #def start_ik_threads(self):
+        #threading.Thread(target=self.tool_teleoperation, args=(1,)).start()
+        #threading.Thread(target=self.tool_teleoperation, args=(2,)).start()
 
-    def tool_teleoperation(self, robot_id):
+    #def tool_teleoperation(self, robot_id):
+    async def tool_teleoperation(self, robot_id):
         while True:
             start_time = time.time()
             robot = getattr(self, f'robot{robot_id}')
@@ -86,32 +88,57 @@ class WebSocketCommunication:
                 print("rotation: ", rotation)
                 new_pose = self.cal_new_pose(current_pose, position, rotation, robot, robot_id)
                 print("new_pose: ", new_pose)
-                all_solutions = robot.SolveIK_All(new_pose, tool)
-                if len(all_solutions) == 0:
-                    print("There are no all_solutions ")
-                else:
-                    print("all_solutions: ", len(all_solutions))
-                    for j in all_solutions:
-                        conf_rlf = robot.JointsConfig(j).list()
-                        rear, lower, flip = conf_rlf[:3]
-                        if rear == 0 and lower == 0 and flip == 1:
-                            print("Front, elbow up, flip solution")
-                            try:
-                                robot.MoveJ(j)
-                                break
-                            except StoppedError as e:
-                                print(f"Collision detected for robot {robot_id}, waiting to retry")
-                                robot.MoveJ(self.home)
-                                # while True:
-                                #     try:
-                                #         time.sleep(1)
-                                #         robot.MoveJ(self.home)
-                                #         break
-                                #     except StoppedError:
-                                #         print("Still in collision, waiting...")
-                                #         continue
 
-            time.sleep(self.Ts)
+                # try:
+                #     robot.MoveJ(new_pose)
+                #     break
+                # except StoppedError as e:
+                #     print(f"Collision detected for robot {robot_id}, waiting to retry")
+                #     robot.MoveJ(self.home)
+                    #robot.MoveJ(self.home)
+                    # while True:
+                    #     try:
+                    #         time.sleep(1)
+                    #         #robot.MoveJ(self.home)
+                    #         break
+                    #     except StoppedError:
+                    #         print("Still in collision, waiting...")
+                    #         continue
+
+                #self.rdk.Render(False)
+                #self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
+                robot.MoveJ(new_pose)
+                self.rdk.setRunMode(RUNMODE_SIMULATE)
+
+
+                # all_solutions = robot.SolveIK_All(new_pose, tool)
+                # if len(all_solutions) == 0:
+                #     print("There are no all_solutions ")
+                # else:
+                #     print("all_solutions: ", len(all_solutions))
+                #     for j in all_solutions:
+                #         conf_rlf = robot.JointsConfig(j).list()
+                #         rear, lower, flip = conf_rlf[:3]
+                #         if rear == 0 and lower == 0 and flip == 1:
+                #             print("Front, elbow up, flip solution")
+                #             try:
+                #                 robot.MoveJ(j)
+                #                 break
+                #             except StoppedError as e:
+                #                 print(f"Collision detected for robot {robot_id}, waiting to retry")
+                #                 robot.MoveJ(self.home)
+                #                 while True:
+                #                     try:
+                #                         time.sleep(1)
+                #                         robot.MoveJ(self.home)
+                #                         break
+                #                     except StoppedError:
+                #                         print("Still in collision, waiting...")
+                #                         continue
+
+            #time.sleep(self.Ts)
+            #time.sleep(0.01)
+            await asyncio.sleep(0.01)
 
     def cal_local_pose(self, position, rotation):
         local_pose = KUKA_2_Pose(
@@ -214,8 +241,10 @@ class WebSocketCommunication:
         receiver_task = asyncio.create_task(self.receive_messages(websocket))
         sender_task = asyncio.create_task(self.send_joint_positions(websocket))
         #order_task = asyncio.create_task(self.order2kuka())
+        operation_task = asyncio.create_task(self.tool_teleoperation(1))
 
-        await asyncio.gather(receiver_task, sender_task
+        await asyncio.gather(receiver_task, sender_task,
+                             operation_task
                              #,order_task
                              )
 
@@ -353,7 +382,7 @@ class WebSocketCommunication:
             # await websocket.send(json_data3)
 
             # send_joint_positions에서 webSocket을 독점하는 것을 막기 위해
-            await asyncio.sleep(0.00001)
+            await asyncio.sleep(0.001)
 
     async def order2kuka(self):
         while True:
