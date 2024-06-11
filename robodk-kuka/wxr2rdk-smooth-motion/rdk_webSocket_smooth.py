@@ -66,8 +66,10 @@ class WebSocketCommunication:
         #self.u3_plus = 0.01  # 3단계 슬라이딩 모드 스위칭
         self.home = [0, -90, 90, 0, 0, 0]
 
+        # 24.06.11 - new variables
         self.current_pose = self.robot1.Pose()
         self.num = 0
+        self.command_queue = asyncio.Queue()
 
         #self.start_ik_threads()
 
@@ -103,13 +105,35 @@ class WebSocketCommunication:
                         #self.rdk.Render(False)
                         #self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
                         #print("new_pose: ", new_pose)
-                        robot.MoveJ(new_pose)
-                        self.rdk.setRunMode(RUNMODE_SIMULATE)
-                        self.current_pose = new_pose
+
+                        ##############################
+                        #robot.MoveJ(new_pose)
+                        #self.rdk.setRunMode(RUNMODE_SIMULATE)
+                        #self.current_pose = new_pose
+                        ##############################
+
                         #socket_lock.release()
                         #self.current_pose = robot.Pose()
+                        await self.command_queue.put(new_pose)
+                        #await self.execute_commands(robot)
 
             await asyncio.sleep(0.01)
+            await self.execute_commands(robot)
+
+    async def execute_commands(self, robot):
+        while not self.command_queue.empty():
+            new_pose = await self.command_queue.get()
+            #self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
+            async with pose_lock:
+                robot.MoveJ(new_pose)
+                self.rdk.setRunMode(RUNMODE_SIMULATE)
+                self.current_pose = new_pose
+                await asyncio.sleep(0.03)
+                #await self.wait_for_motion_complete(robot)
+
+    async def wait_for_motion_complete(self, robot):
+        while robot.Busy():
+            await asyncio.sleep(0.04)
 
     def pose_dif(self, pose1, pose2):
         p1 = Pose_2_KUKA(pose1)
@@ -208,8 +232,6 @@ class WebSocketCommunication:
         x_rot_matrix = rotx(0)
         y_rot_matrix = roty(0)
         z_rot_matrix = rotz(0)
-
-
 
     def start_server(self):
         server = websockets.serve(self.handler, self.host, self.port)
