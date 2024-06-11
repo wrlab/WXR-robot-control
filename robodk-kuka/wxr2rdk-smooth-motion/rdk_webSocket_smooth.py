@@ -9,6 +9,7 @@ import threading
 
 socket_lock = threading.Lock()
 socket_lock2 = threading.Lock()
+pose_lock = asyncio.Lock()
 
 
 def rad2degree(rad):
@@ -59,12 +60,14 @@ class WebSocketCommunication:
         # smooth parameters
         self.Ts = 0.01 # sampling 주기
         self.kp3 = 30 # 3단계 위치 보정
+        #self.kp3 = 2  # 3단계 위치 보정
         self.kd3 = 4.2 # 3단계 속도 보정
-        #self.u3_plus = 0.01 # 3단계 슬라이딩 모드 스위칭
-        self.u3_plus = 0.0  # 3단계 슬라이딩 모드 스위칭
+        self.u3_plus = 1.0 # 3단계 슬라이딩 모드 스위칭
+        #self.u3_plus = 0.01  # 3단계 슬라이딩 모드 스위칭
         self.home = [0, -90, 90, 0, 0, 0]
-        #self.target_joints_rad = [radians(joint) for joint in self.home]
-        #print(self.target_joints_rad)
+
+        self.current_pose = self.robot1.Pose()
+        self.num = 0
 
         #self.start_ik_threads()
 
@@ -76,6 +79,11 @@ class WebSocketCommunication:
 
     #def tool_teleoperation(self, robot_id):
     async def tool_teleoperation(self, robot_id):
+        threshold = 1.0 # 임계값 설정 (단위: mm)
+        #threshold = 0.0000001  # 임계값 설정 (단위: mm)
+        #robot = getattr(self, f'robot{robot_id}')
+        #current_pose = robot.Pose()
+
         while True:
             start_time = time.time()
             robot = getattr(self, f'robot{robot_id}')
@@ -84,61 +92,32 @@ class WebSocketCommunication:
             rotation = getattr(self, f'rotation{robot_id}')
 
             if position and rotation:
-                current_pose = robot.Pose()
-                print("rotation: ", rotation)
-                new_pose = self.cal_new_pose(current_pose, position, rotation, robot, robot_id)
-                print("new_pose: ", new_pose)
+                async with pose_lock: # Lock to ensure new_pose is executed sequentially
+                    current_pose_tmp = robot.Pose()
+                    new_pose = self.cal_new_pose(current_pose_tmp, position, rotation, robot, robot_id)
 
-                # try:
-                #     robot.MoveJ(new_pose)
-                #     break
-                # except StoppedError as e:
-                #     print(f"Collision detected for robot {robot_id}, waiting to retry")
-                #     robot.MoveJ(self.home)
-                    #robot.MoveJ(self.home)
-                    # while True:
-                    #     try:
-                    #         time.sleep(1)
-                    #         #robot.MoveJ(self.home)
-                    #         break
-                    #     except StoppedError:
-                    #         print("Still in collision, waiting...")
-                    #         continue
+                    if self.pose_dif(self.current_pose, new_pose) > threshold:
+                        #socket_lock.acquire()
+                        self.num += 1
+                        print(f"MoveJ! {self.num} at {time.time()}")
+                        #self.rdk.Render(False)
+                        #self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
+                        #print("new_pose: ", new_pose)
+                        robot.MoveJ(new_pose)
+                        self.rdk.setRunMode(RUNMODE_SIMULATE)
+                        self.current_pose = new_pose
+                        #socket_lock.release()
+                        #self.current_pose = robot.Pose()
 
-                #self.rdk.Render(False)
-                #self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
-                robot.MoveJ(new_pose)
-                self.rdk.setRunMode(RUNMODE_SIMULATE)
-
-
-                # all_solutions = robot.SolveIK_All(new_pose, tool)
-                # if len(all_solutions) == 0:
-                #     print("There are no all_solutions ")
-                # else:
-                #     print("all_solutions: ", len(all_solutions))
-                #     for j in all_solutions:
-                #         conf_rlf = robot.JointsConfig(j).list()
-                #         rear, lower, flip = conf_rlf[:3]
-                #         if rear == 0 and lower == 0 and flip == 1:
-                #             print("Front, elbow up, flip solution")
-                #             try:
-                #                 robot.MoveJ(j)
-                #                 break
-                #             except StoppedError as e:
-                #                 print(f"Collision detected for robot {robot_id}, waiting to retry")
-                #                 robot.MoveJ(self.home)
-                #                 while True:
-                #                     try:
-                #                         time.sleep(1)
-                #                         robot.MoveJ(self.home)
-                #                         break
-                #                     except StoppedError:
-                #                         print("Still in collision, waiting...")
-                #                         continue
-
-            #time.sleep(self.Ts)
-            #time.sleep(0.01)
             await asyncio.sleep(0.01)
+
+    def pose_dif(self, pose1, pose2):
+        p1 = Pose_2_KUKA(pose1)
+        p2 = Pose_2_KUKA(pose2)
+        robomath.distance(p1, p2)
+        #print("Distance between 2 points: ", robomath.distance(p1, p2))
+
+        return robomath.distance(p1, p2)
 
     def cal_local_pose(self, position, rotation):
         local_pose = KUKA_2_Pose(
@@ -178,7 +157,7 @@ class WebSocketCommunication:
 
         # 목표 자세 계산
         new_position = np.array(current_pose.Pos()) + velocity_command * self.Ts
-        print("new_position: ", new_position)
+        #print("new_position: ", new_position)
 
         x_rotation = rotation.get('x')
         y_rotation = rotation.get('y')
@@ -199,7 +178,7 @@ class WebSocketCommunication:
 
         # Apply the rotation to the current pose
         new_pose = transl(new_pose.Pos()) * rotation_matrix
-        print("new_pose: ", new_pose)
+        #print("new_pose: ", new_pose)
 
         return new_pose
 
@@ -287,7 +266,7 @@ class WebSocketCommunication:
                 self.position1 = data.get("position")
                 self.rotation1 = data.get("rotation")
                 #print("TCP1 Position: " + str(self.position1))
-                print("TCP1 Rotation: " + str(self.rotation1))
+                #print("TCP1 Rotation: " + str(self.rotation1))
 
             if data.get("command") == "update_position2":
                 #print("Get update_position2")
@@ -311,17 +290,12 @@ class WebSocketCommunication:
             current_tables1 = self.turntable1.Joints()
             #socket_lock.release()
 
-            # socket_lock2.acquire()
-            current_joints2 = self.robot2.Joints()
-            current_tables2 = self.turntable2.Joints()
-            # socket_lock2.release()
-
             reachable1 = self.reachable1
 
             if not reachable1:
                 json_data3 = json.dumps(reachable1)
                 #data_np = np.array(json_data3)
-                print(json_data3)
+                #print(json_data3)
                 await websocket.send(json_data3)
             else:
                 # 로봇 관절 각도 값들이나 턴테이블의 각도값이 변하였을 때 데이터 전송
@@ -339,74 +313,6 @@ class WebSocketCommunication:
                     await websocket.send(json_data)
 
                     self.previous_joints1 = current_joints1
-            # else:
-            #    print("Same as Joint1")
-
-            if not np.array_equal(current_tables1, self.previous_tables1) and not self.on_table1:
-                print("send_turntable_rotations of table[1]")
-                tables_np = np.array(current_tables1)
-                tables_flat = tables_np.flatten()
-                data2 = tables_flat.tolist()
-                json_data2 = json.dumps(data2)
-                await websocket.send(json_data2)
-                self.previous_tables1 = current_tables1
-
-            if not np.array_equal(current_joints2, self.previous_joints2):
-                # 웹소켓 전송 시간 시작
-                # print("send_joint_positions of robot[2]")
-                start_time3 = time.time()
-                joints_np = np.array(current_joints2)
-                joints_flat = joints_np.flatten()
-                # print("joints_flat_r2: " + str(joints_flat))
-
-                data = joints_flat.tolist()
-                data.append('robot2')
-                # print("data_r2: " + str(data))
-                json_data = json.dumps(data)
-                await websocket.send(json_data)
-
-                self.previous_joints2 = current_joints2
-
-            # turn-table 값 전달
-            # if not np.array_equal(current_tables2, self.previous_tables2) and not self.on_table2:
-            #     print("send_turntable_rotations of table[2]")
-            #     tables_np = np.array(current_tables2)
-            #     tables_flat = tables_np.flatten()
-            #     data2 = tables_flat.tolist()
-            #     json_data2 = json.dumps(data2)
-            #     await websocket.send(json_data2)
-            #     self.previous_tables2 = current_tables2
-
-            # json_data3 = json.dumps(reachable1)
-            # print(json_data3)
-            # await websocket.send(json_data3)
 
             # send_joint_positions에서 webSocket을 독점하는 것을 막기 위해
             await asyncio.sleep(0.001)
-
-    async def order2kuka(self):
-        while True:
-            start_time = time.time()
-            joints = self.robot1.SimulatorJoints()
-            print("current joints: ", self.current_joints)
-            print("simulatorJoints: ", joints)
-            #if self.current_joints != joints:
-            if not np.allclose(self.current_joints, joints, atol=0.1):
-                socket_lock.acquire()
-                # kuka_controller 에 이동 명령 전달
-                print("RunMode: ", self.rdk.RunMode())
-                self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
-                print("changed RunMode: ", self.rdk.RunMode())
-                print("Change joint values are: ", joints)
-                self.robot1.MoveJ(joints)
-                print("Robot MoveJ")
-                self.current_joints = joints
-                self.rdk.setRunMode(RUNMODE_SIMULATE)
-                socket_lock.release()
-
-                # Execution time
-                print(f"Execution time: {time.time() - start_time} seconds")
-            else:
-                print("Not order2kuka!")
-
-            await asyncio.sleep(1)
