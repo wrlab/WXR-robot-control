@@ -6,6 +6,7 @@ from robodk.robomath import *
 from robodk.robolink import *
 import time
 import threading
+import ssl
 
 socket_lock = threading.Lock()
 socket_lock2 = threading.Lock()
@@ -64,7 +65,12 @@ class WebSocketCommunication:
         self.kd3 = 4.2 # 3단계 속도 보정
         self.u3_plus = 1.0 # 3단계 슬라이딩 모드 스위칭
         #self.u3_plus = 0.01  # 3단계 슬라이딩 모드 스위칭
-        self.home = [0, -90, 90, 0, 0, 0]
+
+        self.isTeleoper = True
+        self.program = self.rdk.Item("Prog1")
+        self.inProgress = False
+        self.home = self.rdk.Item("Home2")
+        #self.home = [0, -90, 90, 0, 0, 0]
 
         # 24.06.11 - new variables
         self.current_pose = self.robot1.Pose()
@@ -87,53 +93,60 @@ class WebSocketCommunication:
         #current_pose = robot.Pose()
 
         while True:
-            start_time = time.time()
-            robot = getattr(self, f'robot{robot_id}')
-            tool = getattr(self, f'tool{robot_id}')
-            position = getattr(self, f'position{robot_id}')
-            rotation = getattr(self, f'rotation{robot_id}')
+            if (self.isTeleoper):
+                start_time = time.time()
+                robot = getattr(self, f'robot{robot_id}')
+                tool = getattr(self, f'tool{robot_id}')
+                position = getattr(self, f'position{robot_id}')
+                rotation = getattr(self, f'rotation{robot_id}')
 
-            if position and rotation:
-                async with pose_lock: # Lock to ensure new_pose is executed sequentially
-                    current_pose_tmp = robot.Pose()
-                    new_pose = self.cal_new_pose(current_pose_tmp, position, rotation, robot, robot_id)
+                if position and rotation:
+                    async with pose_lock: # Lock to ensure new_pose is executed sequentially
+                        current_pose_tmp = robot.Pose()
+                        new_pose = self.cal_new_pose(current_pose_tmp, position, rotation, robot, robot_id)
 
-                    if self.pose_dif(self.current_pose, new_pose) > threshold:
-                        #socket_lock.acquire()
-                        self.num += 1
-                        print(f"MoveJ! {self.num} at {time.time()}")
-                        #self.rdk.Render(False)
-                        #self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
-                        #print("new_pose: ", new_pose)
+                        if self.pose_dif(self.current_pose, new_pose) > threshold:
+                            #socket_lock.acquire()
+                            self.num += 1
+                            print(f"MoveJ! {self.num} at {time.time()}")
+                            #self.rdk.Render(False)
+                            #self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
+                            #print("new_pose: ", new_pose)
 
-                        ##############################
-                        #robot.MoveJ(new_pose)
-                        #self.rdk.setRunMode(RUNMODE_SIMULATE)
-                        #self.current_pose = new_pose
-                        ##############################
+                            ##############################
+                            #robot.MoveJ(new_pose)
+                            #self.rdk.setRunMode(RUNMODE_SIMULATE)
+                            #self.current_pose = new_pose
+                            ##############################
 
-                        #socket_lock.release()
-                        #self.current_pose = robot.Pose()
-                        await self.command_queue.put(new_pose)
-                        #await self.execute_commands(robot)
+                            #socket_lock.release()
+                            #self.current_pose = robot.Pose()
+                            await self.command_queue.put(new_pose)
+                            #await self.execute_commands(robot)
 
-            await asyncio.sleep(0.01)
-            await self.execute_commands(robot)
+                await asyncio.sleep(0.01)
+                await self.execute_commands(robot)
+
+            else:
+                await asyncio.sleep(0.001)
 
     async def execute_commands(self, robot):
         while not self.command_queue.empty():
-            new_pose = await self.command_queue.get()
-            #self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
-            async with pose_lock:
-                robot.MoveJ(new_pose)
-                self.rdk.setRunMode(RUNMODE_SIMULATE)
-                self.current_pose = new_pose
-                await asyncio.sleep(0.03)
+            if (self.isTeleoper):
+                new_pose = await self.command_queue.get()
+                #self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
+                async with pose_lock:
+                    robot.MoveJ(new_pose)
+                    self.rdk.setRunMode(RUNMODE_SIMULATE)
+                    self.current_pose = new_pose
+                    await asyncio.sleep(0.001)
                 #await self.wait_for_motion_complete(robot)
+            else:
+                await asyncio.sleep(0.001)
 
     async def wait_for_motion_complete(self, robot):
         while robot.Busy():
-            await asyncio.sleep(0.04)
+            await asyncio.sleep(0.0001)
 
     def pose_dif(self, pose1, pose2):
         p1 = Pose_2_KUKA(pose1)
@@ -234,7 +247,10 @@ class WebSocketCommunication:
         z_rot_matrix = rotz(0)
 
     def start_server(self):
-        server = websockets.serve(self.handler, self.host, self.port)
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        ssl_context.load_cert_chain(certfile="C:/GitProjects/robodk-kuka/wxr2rdk-smooth-motion/selfsigned.crt", keyfile="C:/GitProjects/robodk-kuka/wxr2rdk-smooth-motion/selfsigned.key")
+        server = websockets.serve(self.handler, self.host, self.port, ssl=ssl_context)
+        #server = websockets.serve(self.handlerort)
         asyncio.get_event_loop().run_until_complete(server)
         asyncio.get_event_loop().run_forever()
 
@@ -252,6 +268,7 @@ class WebSocketCommunication:
     async def receive_messages(self, websocket):
         async for message in websocket:
             data = json.loads(message)
+            print("data: ", data)
             #self.robot1.Stop()
             if data.get("command") == "start_streaming":
                 print("Start streaming command received")
@@ -282,6 +299,49 @@ class WebSocketCommunication:
                     self.turntable1.setJoints(joint_values)
                 #print(f"update_turntables")
 
+            if data.get("command") == "setting mode":
+                mode = data.get("mode")
+                print("data: ", data)
+                if mode == "Remote":
+                    print("mode: ", mode)
+                    self.isTeleoper = True
+                elif mode == "Mirroring":
+                    print("mode: ", mode)
+                    self.isTeleoper = False
+
+            if data.get("command") == 'Simulation':
+                signal = data.get("signal")
+                if signal == 'Start':
+                    print("Start Simulation Program")
+                    self.program.RunProgram()
+                    self.inProgress = True
+                    sim_data = json.dumps(self.inProgress)
+                    print("sim_data: ", sim_data)
+                    await websocket.send(sim_data)
+                    while self.program.Busy():
+                        print("Program is running...")
+                        await asyncio.sleep(0.5)
+                        try:
+                            message = await asyncio.wait_for(websocket.recv(), timeout=0.001)
+                            data = json.loads(message)
+                            if data.get("command") == 'Simulation' and data.get("signal") == 'Stop':
+                                await self.stop_simulation(websocket)
+                                break
+                        except asyncio.TimeoutError:
+                            continue
+                    print("Program has Finished.")
+                    self.inProgress = False
+                    sim_data = json.dumps(self.inProgress)
+                    print("sim_data: ", sim_data)
+                    await websocket.send(sim_data)
+                elif signal == 'Stop':
+                    # print("Stop Simulation Program")
+                    # self.program.Stop()
+                    # self.inProgress = False
+                    # sim_data = json.dumps(self.inProgress)
+                    # print("sim_data: ", sim_data)
+                    await self.stop_simulation(websocket)
+
             if data.get("command") == "update_position":
                 #print("Get update_position")
                 # 2024.01.02
@@ -299,6 +359,15 @@ class WebSocketCommunication:
                 #print("TCP2 Rotation: " + str(self.rotation2))
 
             #await asyncio.sleep(0.0001)
+
+    async def stop_simulation(self, websocket):
+        print("Stop Simulation Program")
+        self.program.Stop()
+        self.inProgress = False
+        sim_data = json.dumps(self.inProgress)
+        print("sim_data: ", sim_data)
+        self.robot1.MoveJ(self.home)
+        await websocket.send(sim_data)
 
     async def send_joint_positions(self, websocket):
         print("send_joint_positions")
@@ -332,6 +401,7 @@ class WebSocketCommunication:
                     data.append('robot1')
                     data.append(reachable1)
                     json_data = json.dumps(data)
+                    print("sned data 2 WXR")
                     await websocket.send(json_data)
 
                     self.previous_joints1 = current_joints1

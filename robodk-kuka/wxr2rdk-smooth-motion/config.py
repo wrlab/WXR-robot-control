@@ -1,4 +1,5 @@
-cfg_wxrServer = {"HOST": "localhost", "PORT": 6894}
+#cfg_wxrServer = {"HOST": "localhost", "PORT": 6894}
+cfg_wxrServer = {"HOST": "192.168.1.123", "PORT": 6894}
 
 from collections import namedtuple
 
