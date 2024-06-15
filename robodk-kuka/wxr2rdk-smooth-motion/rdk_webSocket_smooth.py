@@ -70,6 +70,7 @@ class WebSocketCommunication:
         self.program = self.rdk.Item("Prog1")
         self.inProgress = False
         self.home = self.rdk.Item("Home2")
+        self.isCollision = False
         #self.home = [0, -90, 90, 0, 0, 0]
 
         # 24.06.11 - new variables
@@ -77,13 +78,7 @@ class WebSocketCommunication:
         self.num = 0
         self.command_queue = asyncio.Queue()
 
-        #self.start_ik_threads()
-
         print("webSocket Start!")
-
-    #def start_ik_threads(self):
-        #threading.Thread(target=self.tool_teleoperation, args=(1,)).start()
-        #threading.Thread(target=self.tool_teleoperation, args=(2,)).start()
 
     #def tool_teleoperation(self, robot_id):
     async def tool_teleoperation(self, robot_id):
@@ -136,11 +131,24 @@ class WebSocketCommunication:
                 new_pose = await self.command_queue.get()
                 #self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
                 async with pose_lock:
-                    robot.MoveJ(new_pose)
+                    try:
+                        #self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
+                        robot.MoveJ(new_pose)
+                    except StoppedError as e:
+                        print(f"StoppedError: {e}")
+                        if "Collision detected" in str(e):
+                            print("collsion detected exception")
+                            self.isTeleoper = False  # 충돌 감지 시 미러링 모드로 전환
+                            self.isCollision = True
+                            self.rdk.setCollisionActive(0)
+                            self.robot1.MoveJ(self.home)
+                            self.rdk.setCollisionActive(1)
+                            self.isCollision = False
+                    #self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
+                    #robot.MoveJ(new_pose)
                     self.rdk.setRunMode(RUNMODE_SIMULATE)
                     self.current_pose = new_pose
                     await asyncio.sleep(0.001)
-                #await self.wait_for_motion_complete(robot)
             else:
                 await asyncio.sleep(0.001)
 
@@ -152,7 +160,6 @@ class WebSocketCommunication:
         p1 = Pose_2_KUKA(pose1)
         p2 = Pose_2_KUKA(pose2)
         robomath.distance(p1, p2)
-        #print("Distance between 2 points: ", robomath.distance(p1, p2))
 
         return robomath.distance(p1, p2)
 
@@ -173,8 +180,6 @@ class WebSocketCommunication:
         # 목표 위치와 회전을 로컬 포즈로 변환
         local_pose = self.cal_local_pose(position, rotation)
 
-        #tool = getattr(self, f'tool{robot_id}')
-
         # 목표 위치와 현재 위치의 차이 계산
         target_position = [local_pose.Pos()[0], local_pose.Pos()[1], local_pose.Pos()[2]]
         error = np.array(target_position) - np.array(current_pose.Pos())
@@ -186,9 +191,6 @@ class WebSocketCommunication:
         else:
             sliding_term = self.u3_plus * error
 
-        # 관절 속도 추정
-        #joint_velocities = self.get_robot_vel(robot_id)
-
         # 위치 보정 신호 계산
         velocity_command = self.kp3 * error + sliding_term
 
@@ -199,11 +201,6 @@ class WebSocketCommunication:
         x_rotation = rotation.get('x')
         y_rotation = rotation.get('y')
         z_rotation = rotation.get('z')
-
-        # # Initialize rotation matrices
-        # x_rot_matrix = rotx(0)
-        # y_rot_matrix = roty(0)
-        # z_rot_matrix = rotz(0)
 
         x_rot_matrix = rotx(x_rotation)  # Use radians for rotation
         z_rot_matrix = rotz(y_rotation)  # Use radians for rotation
@@ -313,7 +310,9 @@ class WebSocketCommunication:
                 signal = data.get("signal")
                 if signal == 'Start':
                     print("Start Simulation Program")
+                    # self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
                     self.program.RunProgram()
+                    self.rdk.setRunMode(RUNMODE_SIMULATE)
                     self.inProgress = True
                     sim_data = json.dumps(self.inProgress)
                     print("sim_data: ", sim_data)
@@ -333,13 +332,10 @@ class WebSocketCommunication:
                     self.inProgress = False
                     sim_data = json.dumps(self.inProgress)
                     print("sim_data: ", sim_data)
+                    sim_finished = json.dumps("sim_finished")
                     await websocket.send(sim_data)
+                    await websocket.send(sim_finished)
                 elif signal == 'Stop':
-                    # print("Stop Simulation Program")
-                    # self.program.Stop()
-                    # self.inProgress = False
-                    # sim_data = json.dumps(self.inProgress)
-                    # print("sim_data: ", sim_data)
                     await self.stop_simulation(websocket)
 
             if data.get("command") == "update_position":
@@ -347,16 +343,6 @@ class WebSocketCommunication:
                 # 2024.01.02
                 self.position1 = data.get("position")
                 self.rotation1 = data.get("rotation")
-                #print("TCP1 Position: " + str(self.position1))
-                #print("TCP1 Rotation: " + str(self.rotation1))
-
-            if data.get("command") == "update_position2":
-                #print("Get update_position2")
-                # 2024.03.08
-                self.position2 = data.get("position")
-                self.rotation2 = data.get("rotation")
-                #print("TCP2 Position: " + str(self.position2))
-                #print("TCP2 Rotation: " + str(self.rotation2))
 
             #await asyncio.sleep(0.0001)
 
@@ -366,7 +352,16 @@ class WebSocketCommunication:
         self.inProgress = False
         sim_data = json.dumps(self.inProgress)
         print("sim_data: ", sim_data)
-        self.robot1.MoveJ(self.home)
+
+        # 예외 처리 추가
+        try:
+            self.robot1.MoveJ(self.home)
+        except StoppedError as e:
+            print(f"StoppedError: {e}")
+
+        #self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
+        #self.robot1.MoveJ(self.home)
+        self.rdk.setRunMode(RUNMODE_SIMULATE)
         await websocket.send(sim_data)
 
     async def send_joint_positions(self, websocket):
@@ -383,11 +378,11 @@ class WebSocketCommunication:
 
             reachable1 = self.reachable1
 
-            if not reachable1:
-                json_data3 = json.dumps(reachable1)
-                #data_np = np.array(json_data3)
-                #print(json_data3)
-                await websocket.send(json_data3)
+            if self.isCollision:
+                collision_detection = json.dumps("collision_detection")
+                #self.isCollision = False
+                print("self.isCollision: ", self.isCollision)
+                await websocket.send(collision_detection)
             else:
                 # 로봇 관절 각도 값들이나 턴테이블의 각도값이 변하였을 때 데이터 전송
                 if not np.array_equal(current_joints1, self.previous_joints1):
