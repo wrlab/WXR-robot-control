@@ -63,7 +63,7 @@ class WebSocketCommunication:
         self.kp3 = 30 # 3단계 위치 보정
         #self.kp3 = 2  # 3단계 위치 보정
         self.kd3 = 4.2 # 3단계 속도 보정
-        self.u3_plus = 0.01 # 3단계 슬라이딩 모드 스위칭
+        self.u3_plus = 1.0 # 3단계 슬라이딩 모드 스위칭
         #self.u3_plus = 0.01  # 3단계 슬라이딩 모드 스위칭
 
         self.isTeleoper = True
@@ -83,11 +83,6 @@ class WebSocketCommunication:
 
     #def tool_teleoperation(self, robot_id):
     async def tool_teleoperation(self, robot_id):
-        threshold = 1.0 # 임계값 설정 (단위: mm)
-        #threshold = 0.0000001  # 임계값 설정 (단위: mm)
-        #robot = getattr(self, f'robot{robot_id}')
-        #current_pose = robot.Pose()
-
         while True:
             if (self.isTeleoper):
                 start_time = time.time()
@@ -102,89 +97,12 @@ class WebSocketCommunication:
                     new_pose = self.cal_new_pose(current_pose, position, rotation, robot, robot_id)
                     print("new_pose: ", new_pose)
 
-                    self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
                     robot.MoveJ(new_pose)
                     self.rdk.setRunMode(RUNMODE_SIMULATE)
 
-                await asyncio.sleep(0.08)
+                await asyncio.sleep(0.001)
             else:
-                await asyncio.sleep(0.08)
-
-                # if position and rotation:
-                #     async with pose_lock: # Lock to ensure new_pose is executed sequentially
-                #         current_pose_tmp = robot.Pose()
-                #         new_pose = self.cal_new_pose(current_pose_tmp, position, rotation, robot, robot_id)
-                #
-                #         if self.pose_dif(self.current_pose, new_pose) > threshold:
-                #             #socket_lock.acquire()
-                #             self.num += 1
-                #             print(f"MoveJ! {self.num} at {time.time()}")
-                #             #self.rdk.Render(False)
-                #             #self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
-                #             #print("new_pose: ", new_pose)
-                #
-                #             ##############################
-                #             self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
-                #             robot.MoveJ(new_pose)
-                #             self.rdk.setRunMode(RUNMODE_SIMULATE)
-                #             self.current_pose = new_pose
-                #             ##############################
-                #
-                #             #socket_lock.release()
-                #             #self.current_pose = robot.Pose()
-                #
-                #             ##########
-                #             #await self.command_queue.put(new_pose)
-                #             ##########
-                #
-                #             #await self.execute_commands(robot)
-                #
-                # await asyncio.sleep(0.01)
-            #     await self.execute_commands(robot)
-            #
-            # else:
-            #     await asyncio.sleep(0.001)
-
-    # async def execute_commands(self, robot):
-    #     while not self.command_queue.empty():
-    #         if (self.isTeleoper):
-    #             new_pose = await self.command_queue.get()
-    #             #self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
-    #             async with pose_lock:
-    #                 try:
-    #                     self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
-    #                     robot.MoveJ(new_pose)
-    #                     self.rdk.setRunMode(RUNMODE_SIMULATE)
-    #                 except StoppedError as e:
-    #                     print(f"StoppedError: {e}")
-    #                     if "Collision detected" in str(e):
-    #                         print("collsion detected exception")
-    #                         self.isTeleoper = False  # 충돌 감지 시 미러링 모드로 전환
-    #                         self.isCollision = True
-    #                         self.rdk.setCollisionActive(0)
-    #                         self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
-    #                         self.robot1.MoveJ(self.home)
-    #                         self.rdk.setRunMode(RUNMODE_SIMULATE)
-    #                         self.rdk.setCollisionActive(1)
-    #                         self.isCollision = False
-    #                 #self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
-    #                 #robot.MoveJ(new_pose)
-    #                 self.rdk.setRunMode(RUNMODE_SIMULATE)
-    #                 self.current_pose = new_pose
-    #                 await asyncio.sleep(0.01)
-    #         else:
-    #             await asyncio.sleep(0.01)
-    #
-    # async def wait_for_motion_complete(self, robot):
-    #     while robot.Busy():
-    #         await asyncio.sleep(0.0001)
-
-    def pose_dif(self, pose1, pose2):
-        p1 = Pose_2_KUKA(pose1)
-        p2 = Pose_2_KUKA(pose2)
-        robomath.distance(p1, p2)
-
-        return robomath.distance(p1, p2)
+                await asyncio.sleep(0.001)
 
     def cal_local_pose(self, position, rotation):
         local_pose = KUKA_2_Pose(
@@ -204,8 +122,8 @@ class WebSocketCommunication:
         local_pose = self.cal_local_pose(position, rotation)
 
         # 목표 위치와 현재 위치의 차이 계산
-        #target_position = [local_pose.Pos()[0], local_pose.Pos()[1], local_pose.Pos()[2]]
         target_position = [local_pose.Pos()[0], -local_pose.Pos()[1], local_pose.Pos()[2]]
+        #target_position = [local_pose.Pos()[0], local_pose.Pos()[1], local_pose.Pos()[2]]
         error = np.array(target_position) - np.array(current_pose.Pos())
 
         # 슬라이딩 모드 제어 신호 계산
@@ -334,7 +252,6 @@ class WebSocketCommunication:
                 signal = data.get("signal")
                 if signal == 'Start':
                     print("Start Simulation Program")
-                    # self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
                     self.program.RunProgram()
                     self.rdk.setRunMode(RUNMODE_SIMULATE)
                     self.inProgress = True
@@ -379,14 +296,11 @@ class WebSocketCommunication:
 
         # 예외 처리 추가
         try:
-            self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
             self.robot1.MoveJ(self.home)
             self.rdk.setRunMode(RUNMODE_SIMULATE)
         except StoppedError as e:
             print(f"StoppedError: {e}")
 
-        #self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
-        #self.robot1.MoveJ(self.home)
         self.rdk.setRunMode(RUNMODE_SIMULATE)
         await websocket.send(sim_data)
 
@@ -416,10 +330,11 @@ class WebSocketCommunication:
                     # print("send_joint_positions of robot[1]")
                     start_time3 = time.time()
                     joints_np = np.array(current_joints1)
+                    print("joints_np: ", joints_np)
+
                     joints_flat = joints_np.flatten()
 
-
-                    joints_flat[0] = -joints_flat[0]
+                    #joints_flat[0] = -joints_flat[0]
 
                     data = joints_flat.tolist()
                     data.append('robot1')
