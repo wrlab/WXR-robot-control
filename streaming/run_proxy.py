@@ -8,17 +8,56 @@ import websockets
 import asyncio
 import ast
 
+class SingletonMeta(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            instance = super().__call__(*args, **kwargs)
+            cls._instances[cls] = instance
+        return cls._instances[cls]
+    
+class RTDEService(metaclass=SingletonMeta):
+    def __init__(self, ur_host_ip, ur_host_freq=125):
+        self.ur_host_ip = ur_host_ip
+        self.ur_host_freq = ur_host_freq
+        self.receiver = RTDEReceive(ur_host_ip, ur_host_freq)
+        self.controller = RTDEControl(ur_host_ip, ur_host_freq)
+        
+    def reconnect(self):
+        self.controller.reconnect()
+        self.receiver.reconnect()
+        
+    def disconnect(self):
+        self.controller.disconnect()
+        self.receiver.disconnect()
+        
+    def get_rtde_receive(self):
+        return self.receiver
+    
+    def get_rtde_control(self):
+        return self.controller
+
 
 async def send_joint(websocket, joint_queue, stop_event):
-    global args
+    print(websocket, "send_joint")
+    global args, service
     step_time_range = 1 / 125
-    receiver = RTDEReceive(args.ur_ip, 125)
+    receiver = service.get_rtde_receive()
+    controller = service.get_rtde_control()
+    
+    # Joint6의 돌기가 나가는 방향이 -y, 즉 반대방향이 +y
+    # 마주보는 면에 뚫고 나가는 것이 +z, 
+    # 왼손에서 엄지가 +z, 검지가 +y라면, +x는 중지가 나가는 방향
     
     while not stop_event.is_set():
         try:
             if not args.connection_test:
                 joints = receiver.getActualQ()
                 x, y, z, ax, ay, az = receiver.getActualTCPPose()
+                temperatures = receiver.getJointTemperatures()
+                
+                print(controller.getTCPOffset())
 
             else:
                 x, y, z = (
@@ -98,10 +137,9 @@ async def recv_tcp(websocket, tcp_queue, stop_event):
             break
 
 async def process_queues(tcp_queue, joint_queue, stop_event):  
-    global args
-    controller = RTDEControl("127.0.0.1")
+    global args, service
+    controller = service.get_rtde_control()
     
-    print(controller)
     start_time = time.time()
     while not stop_event.is_set():
         try:
@@ -126,7 +164,9 @@ async def process_queues(tcp_queue, joint_queue, stop_event):
                         # (-0.12, 0.8 + 0.05, -0.55 + 0.05) -> (-0.12, -0.4, 0.15)
                         # 0.85 -> 0.15?
                         # 
-                        target_joint = controller.getInverseKinematics([x, z, y, 0, -3.166, 0])
+                        
+                        
+                        target_joint = controller.getInverseKinematics([x, -z, y, 0, 3.14, 3.14])
                         controller.servoJ(target_joint, 0, 0, 0.01, 0.08, 300)
                         start_time = time.time()
 
@@ -144,7 +184,7 @@ async def process_queues(tcp_queue, joint_queue, stop_event):
 
 async def main(websocket, path):
     print(websocket, path)
-    global args
+    global args, service
 
     tcp_queue = asyncio.Queue()
     joint_queue = asyncio.Queue()
@@ -153,7 +193,6 @@ async def main(websocket, path):
     receive_task = asyncio.create_task(recv_tcp(websocket, tcp_queue, stop_event))
     send_task = asyncio.create_task(send_joint(websocket, joint_queue, stop_event))
     queue_task = asyncio.create_task(process_queues(tcp_queue, joint_queue, stop_event))
-
     try:
         await asyncio.gather(receive_task, send_task, queue_task, return_exceptions=True)
     except websockets.ConnectionClosed:
@@ -164,10 +203,13 @@ async def main(websocket, path):
         receive_task.cancel()
         send_task.cancel()
         queue_task.cancel()
+        service.disconnect()
+        
         await asyncio.gather(receive_task, send_task, queue_task, return_exceptions=True)
 
 
 if __name__ == "__main__":
+    global service
     import argparse
 
     parser = argparse.ArgumentParser("UR Robot Proxy Server for Data Streaming")
@@ -178,6 +220,8 @@ if __name__ == "__main__":
     parser.add_argument("--tcp_recv_test", action="store_false", help="TCP Recv Test")
     args = parser.parse_args()
 
+    service = RTDEService(args.ur_ip, 125)
+    
     start_server = websockets.serve(main, "0.0.0.0", 5000)
     print("Waiting...")
 
