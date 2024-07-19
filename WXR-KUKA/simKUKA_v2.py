@@ -42,12 +42,12 @@ for src_file_path in src_file_paths:
 
             list_values.append(value)
 
-        print("list_values: ")
-        print(list_values[:6])
+        #print("list_values: ")
+        #print(list_values[:6])
         return list_values
 
     # Ask the user to select a robot (if more than a robot is available)
-    robot = RDK.Item('KUKA KR 70 R2100')
+    robot = RDK.Item('KUKA KR 70 R2100-Meltio')
 
     if not robot.Valid():
         raise Exception("Robot not selected or not valid")
@@ -56,6 +56,7 @@ for src_file_path in src_file_paths:
     frame = RDK.Item('Baseline')
 
     if not frame.Valid():
+        # If there is no active reference frame, use the robot base
         # If there is no active reference frame, use the robot base
         frame = robot.Parent()
 
@@ -77,7 +78,7 @@ for src_file_path in src_file_paths:
         for line in f:
             # Remove empty characters:
             line = line.strip()
-            print("Loading line: " + line)
+            #print("Loading line: " + line)
 
             # Get all the numeric values in order
             values = GetValues(line)
