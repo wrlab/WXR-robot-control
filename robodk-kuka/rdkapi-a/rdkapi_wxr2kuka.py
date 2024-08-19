@@ -79,6 +79,9 @@ class WebSocketCommunication:
         self.total_log_file = self.get_unique_log_file("points/total_pose_log.txt")
         self.setup_total_log_file()
 
+        self.joints_log_file = self.get_unique_log_file("joints/joints_log.txt")
+        self.setup_joints_log_file()
+
         self.tps = {} # 모든 TP 데이터를 저장할 딕셔너리
 
 
@@ -100,6 +103,10 @@ class WebSocketCommunication:
         with open(self.total_log_file, 'w') as f:
             f.write("time,x,y,z\n")
 
+    def setup_joints_log_file(self):
+        with open(self.joints_log_file, 'w') as f:
+            f.write("time,a1,a2,a3,a4,a5,a6\n")
+
     def log_pose(self, pos):
         timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
         with open(self.buffer_log_file, 'a') as f:
@@ -110,13 +117,29 @@ class WebSocketCommunication:
         with open(self.total_log_file, 'a') as f:
             f.write(f"{timestamp},{pos[0]},{pos[1]},{pos[2]}\n")
 
+    def log_joints(self, joints):
+        timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
+        with open(self.joints_log_file, 'a') as f:
+            f.write(f"{timestamp},{joints[0]},{joints[1]},{joints[2]}, {joints[3]},{joints[4]},{joints[5]}\n")
+
     def start_server(self):
-        #ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        #ssl_context.load_cert_chain(certfile="C:/GitProjects/robodk-kuka/wxr2rdk-smooth-motion/selfsigned.crt", keyfile="C:/GitProjects/robodk-kuka/wxr2rdk-smooth-motion/selfsigned.key")
-        #server = websockets.serve(self.handler, self.host, self.port, ssl=ssl_context)
         server = websockets.serve(self.handler, self.host, self.port)
         asyncio.get_event_loop().run_until_complete(server)
         asyncio.get_event_loop().run_forever()
+
+        # ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        # server = websockets.serve(self.handler, self.host, self.port, ssl=ssl_context)
+        # # server = websockets.serve(self.handlerort)
+        # asyncio.get_event_loop().run_until_complete(server)
+        # asyncio.get_event_loop().run_forever()
+
+    def make_teachingProg(self, data):
+        for tp in data.get("tps", []):
+            self.tps[tp['id']] = {
+                'position': tp['position'],
+                'rotation': tp['rotation']
+            }
+            print(f"{tp['id']} - Position: {tp['position']}, Rotation: {tp['rotation']}")
 
     async def handler(self, websocket):
         receiver_task = asyncio.create_task(self.receive_messages(websocket))
@@ -150,6 +173,7 @@ class WebSocketCommunication:
                         self.num += 1
                         print("MoveJ", self.num)
                         self.log_pose(new_pose.Pos())
+                        self.log_joints(robot.Joints().list())
                         #self.rdk.setRunMode(RUNMODE_SIMULATE)
 
                 await asyncio.sleep(0.001)
@@ -177,12 +201,33 @@ class WebSocketCommunication:
 
             # 24.07.17 티칭포인트들 전달 받은 코드 추가
             if data.get("command") == "teaching_points":
+                print("teaching points receiving")
+                program_name = "teaching"
+                count = 0
+                created_targets = []
+                program = self.rdk.AddProgram(program_name, self.robot1)
+                #self.make_teachingProg(data)
                 for tp in data.get("tps", []):
                     self.tps[tp['id']] = {
                         'position': tp['position'],
                         'rotation': tp['rotation']
                     }
+                    count = count + 1
+                    points_pos = self.rdkapi_math.cal_local_pose(tp['position'], tp['rotation'])
+                    target = self.rdk.AddTarget('T%i' % count)
+                    target.setPose(points_pos)
+                    program.MoveJ(target)
+                    created_targets.append(target)
+                    #self.robot1.MoveJ(points_pos)
                     print(f"{tp['id']} - Position: {tp['position']}, Rotation: {tp['rotation']}")
+
+                program.RunProgram()
+
+                await asyncio.sleep(2)
+
+                program.Delete()
+                for target in created_targets:
+                    target.Delete()
 
             if data.get("command") == "setting mode":
                 mode = data.get("mode")
@@ -224,6 +269,7 @@ class WebSocketCommunication:
                     await websocket.send(sim_finished)
                 elif signal == 'Stop':
                     await self.stop_simulation(websocket)
+
 
             #await asyncio.sleep(0.001)
 
