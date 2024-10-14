@@ -122,8 +122,8 @@ class WebSocketCommunication:
         local_pose = self.cal_local_pose(position, rotation)
 
         # 목표 위치와 현재 위치의 차이 계산
-        target_position = [local_pose.Pos()[0], -local_pose.Pos()[1], local_pose.Pos()[2]]
-        #target_position = [local_pose.Pos()[0], local_pose.Pos()[1], local_pose.Pos()[2]]
+        #target_position = [local_pose.Pos()[0], -local_pose.Pos()[1], local_pose.Pos()[2]]
+        target_position = [local_pose.Pos()[0], local_pose.Pos()[1], local_pose.Pos()[2]]
         error = np.array(target_position) - np.array(current_pose.Pos())
 
         # 슬라이딩 모드 제어 신호 계산
@@ -186,10 +186,10 @@ class WebSocketCommunication:
         z_rot_matrix = rotz(0)
 
     def start_server(self):
-        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        ssl_context.load_cert_chain(certfile="C:/GitProjects/robodk-kuka/wxr2rdk-smooth-motion/selfsigned.crt", keyfile="C:/GitProjects/robodk-kuka/wxr2rdk-smooth-motion/selfsigned.key")
-        server = websockets.serve(self.handler, self.host, self.port, ssl=ssl_context)
-        #server = websockets.serve(self.handlerort)
+        #ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        #ssl_context.load_cert_chain(certfile="C:/GitProjects/robodk-kuka/wxr2rdk-smooth-motion/selfsigned.crt", keyfile="C:/GitProjects/robodk-kuka/wxr2rdk-smooth-motion/selfsigned.key")
+        #server = websockets.serve(self.handler, self.host, self.port, ssl=ssl_context)
+        server = websockets.serve(self.handler, self.host, self.port)
         asyncio.get_event_loop().run_until_complete(server)
         asyncio.get_event_loop().run_forever()
 

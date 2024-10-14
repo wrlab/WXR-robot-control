@@ -53,7 +53,7 @@ class WebSocketCommunication:
         # 원격 제어 on/off 변수
         self.isTeleoper = True
         #self.program = self.rdk.Item("Prog1")
-        self.program = self.rdk.Item("Prog2")
+        self.program = self.rdk.Item("Prog1")
         # 시뮬레이션 진행에 대한 변수
         self.inProgress = False
         # home 포지션
@@ -123,15 +123,17 @@ class WebSocketCommunication:
             f.write(f"{timestamp},{joints[0]},{joints[1]},{joints[2]}, {joints[3]},{joints[4]},{joints[5]}\n")
 
     def start_server(self):
-        server = websockets.serve(self.handler, self.host, self.port)
-        asyncio.get_event_loop().run_until_complete(server)
-        asyncio.get_event_loop().run_forever()
-
-        # ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        # server = websockets.serve(self.handler, self.host, self.port, ssl=ssl_context)
-        # # server = websockets.serve(self.handlerort)
+        # server = websockets.serve(self.handler, self.host, self.port)
         # asyncio.get_event_loop().run_until_complete(server)
         # asyncio.get_event_loop().run_forever()
+
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        ssl_context.load_cert_chain(certfile="crt/livinglab/selfsigned.crt",
+                                    keyfile="crt/livinglab/selfsigned.key")
+        server = websockets.serve(self.handler, self.host, self.port, ssl=ssl_context)
+        # server = websockets.serve(self.handlerort)
+        asyncio.get_event_loop().run_until_complete(server)
+        asyncio.get_event_loop().run_forever()
 
     def make_teachingProg(self, data):
         for tp in data.get("tps", []):
@@ -223,7 +225,10 @@ class WebSocketCommunication:
 
                 program.RunProgram()
 
-                await asyncio.sleep(2)
+                #await asyncio.sleep(2)
+
+                while self.robot1.Busy():
+                    await asyncio.sleep(0.5)  # 0.5초 간격으로 로봇 상태 체크
 
                 program.Delete()
                 for target in created_targets:
