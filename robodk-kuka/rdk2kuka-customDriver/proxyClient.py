@@ -155,12 +155,12 @@ class kukaClient:
         return _value
 
     def _pack_move_req(self):
-        position_len = len(self.position)
+        position_len = len(self.position) // 2
         flag = 11  # Wide format version of CommandMotion
-        req_len = 3 + 2 + position_len
+        req_len = 3 + 2 + len(self.position)
 
         return struct.pack(
-            '!HHBBH' + str(position_len) + 's',
+            '!HHBBH' + str(len(self.position)) + 's',
             self.msg_id,  # Tag ID
             req_len,  # Message Length
             flag,  # Message Type
@@ -250,38 +250,35 @@ class kukaClient:
         self.sock.close()
 
 
-# 사용 예제
 if __name__ == "__main__":
-    ip = '172.31.2.147'  # C3 Bridge Interface 서버 IP 주소
+    ip = '172.31.2.147'  # C3 Bridge Interface Server IP address
     port = 7000
     #cfg_host = {"HOST": "172.31.2.147", "PORT": 7000}
     client = kukaClient(ip, port)
 
     if client.can_connect:
-        print("서버에 연결 성공")
+        print("Connecting Success.")
 
-        # 변수 읽기 예제
+        # read variable example
         #response = client.read('$POS_ACT', debug=True)
-        #print(f"현재 위치: {response}")
+        #print(f"current pos: {response}")
         stop_message = client.read('$STOPMESS')
         if stop_message:
-            print(f"로봇이 정지 상태입니다: {stop_message}")
+            print(f"Robot is Stop Status: {stop_message}")
         else:
-            print("로봇이 정지 상태가 아닙니다.")
+            print("Robot is Not Stop Status.")
 
-        # 변수 쓰기 예제
+        # write variable example
         client.write('$OV_PRO', '30', debug=True)
 
-        # 로봇 이동 명령 예제 (PTP 이동)
-        position = '{A1 0, A2 -90, A3 90, A4 0, A5 0, A6 0}'
-        #position = '{X 1600.00, Y 70.00, Z 500.00, A 0, B 0, C 0}' #'{POS: X 1600.00, Y 70.00, Z 500.00, A 0, B 0, C 0}'
+        # motion command example (PTP)
+        position = '{AXIS: A1 0, A2 -90, A3 90, A4 0, A5 0, A6 0}'
+        #position = '{POS: X 0, Y 0, Z 0, A 0, B 0, C 0}'
         client.move(1, position, debug=True)
 
-        # 로봇 이동 명령 예제 (PTP_REL 이동)
-        #position = "{X 10, Y 0, Z 0, A 0, B 0, C 0}"
-        #client.move(3, position, debug=True)
+
     else:
-        print("서버에 연결 실패")
+        print("Server Connecting Fail.")
 
     client.close()
 

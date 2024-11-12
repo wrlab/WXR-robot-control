@@ -5,10 +5,12 @@ import pandas as pd
 import numpy as np
 
 # 로그 파일에서 데이터 로드
-log_file = "C:/GitProjects/robodk-kuka/rdkapi-a/points/pose_log_26.txt"
+#log_file = "C:/GitProjects/robodk-kuka/rdkapi-a/points/pose_log_67.txt"
+log_file = "/Users/jaehongyoo/Documents/GitHub/WXR-robot-control/robodk-kuka/rdkapi-a/points/pose_log_68.txt"
 data = pd.read_csv(log_file)
 
-total_log_file = "C:/GitProjects/robodk-kuka/rdkapi-a/points/total_pose_log_25.txt"
+#total_log_file = "C:/GitProjects/robodk-kuka/rdkapi-a/points/total_pose_log_66.txt"
+total_log_file = "/Users/jaehongyoo/Documents/GitHub/WXR-robot-control/robodk-kuka/rdkapi-a/points/total_pose_log_67.txt"
 total_data = pd.read_csv(total_log_file)
 
 #######################################################

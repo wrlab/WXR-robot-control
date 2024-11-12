@@ -63,7 +63,7 @@ class WebSocketCommunication:
 
         # 24.06.11 - new variables
         self.current_pose = self.robot1.Pose()
-        self.threshold = 1 # 임계값 설정 (단위: mm)
+        self.threshold = 0.1 # 임계값 설정 (단위: mm)
         self.num = 0
         self.command_queue = asyncio.Queue()
         
@@ -83,6 +83,10 @@ class WebSocketCommunication:
         self.setup_joints_log_file()
 
         self.tps = {} # 모든 TP 데이터를 저장할 딕셔너리
+
+        self.tcp_pos = None # 전송한 TCP 좌표
+        self.vector = None # wxr에서 전달받은 백터
+        self.scale = 1 #
 
 
         print("webSocket Start!")
@@ -146,9 +150,11 @@ class WebSocketCommunication:
     async def handler(self, websocket):
         receiver_task = asyncio.create_task(self.receive_messages(websocket))
         sender_task = asyncio.create_task(self.send_joint_positions(websocket))
-        operation_task = asyncio.create_task(self.tool_teleoperation(1))
+        #operation_task = asyncio.create_task(self.tool_teleoperation(1))
+        operation_task_delta = asyncio.create_task(self.tool_teleoperation_delta(1))
 
-        await asyncio.gather(receiver_task, sender_task, operation_task)
+        await asyncio.gather(receiver_task, sender_task, operation_task_delta)
+
     async def tool_teleoperation(self, robot_id):
         while True:
             if (self.isTeleoper):
@@ -161,8 +167,11 @@ class WebSocketCommunication:
                 if position and rotation:
                     current_pose = robot.Pose()
                     new_pose = self.rdkapi_math.cal_local_pose(position, rotation)
+                    #offset_pose = robomath.Offset(new_pose, 1, 0, 0)
 
-                    # print("new_pose:", new_pose.Pos())
+
+                    #print("new_pose:", new_pose.Pos())
+                    #print("offset_pose:", offset_pose.Pos())
                     # robot.MoveJ(new_pose)
                     # self.num += 1
                     # print("MoveJ", self.num)
@@ -171,21 +180,53 @@ class WebSocketCommunication:
 
                     if self.rdkapi_math.pose_dif(current_pose, new_pose) > self.threshold:
                         print("new_pose:",new_pose.Pos())
+                        #print("offset_pose:", offset_pose.Pos())
                         robot.MoveJ(new_pose)
                         self.num += 1
                         print("MoveJ", self.num)
+                        self.tcp_pos = new_pose.Pos()
                         self.log_pose(new_pose.Pos())
                         self.log_joints(robot.Joints().list())
                         #self.rdk.setRunMode(RUNMODE_SIMULATE)
 
-                await asyncio.sleep(0.001)
+                await asyncio.sleep(0.1)
             else:
-                await asyncio.sleep(0.001)
+                await asyncio.sleep(0.1)
+
+    async def tool_teleoperation_delta(self, robot_id):
+        while True:
+            if (self.isTeleoper):
+                robot = getattr(self, f'robot{robot_id}')
+                tool = getattr(self, f'tool{robot_id}')
+                # 업데이트된 포지션과 로테이션값
+                position = getattr(self, f'position{robot_id}')
+                rotation = getattr(self, f'rotation{robot_id}')
+
+                if self.vector:
+                    current_pose = robot.Pose()
+                    x_delta = self.vector[0]
+                    y_delta = self.vector[1]
+                    z_delta = self.vector[2]
+                    new_pose = robomath.Offset(current_pose, x_delta, y_delta, z_delta)
+                    #offset_pose = robomath.Offset(new_pose, 1, 0, 0)
+
+                    if self.rdkapi_math.pose_dif(current_pose, new_pose) > self.threshold:
+                        print("new_pose:",new_pose.Pos())
+                        robot.MoveJ(new_pose)
+                        self.num += 1
+                        print("MoveJ", self.num)
+                        self.tcp_pos = new_pose.Pos()
+                        self.log_pose(new_pose.Pos())
+                        self.log_joints(robot.Joints().list())
+                        #self.rdk.setRunMode(RUNMODE_SIMULATE)
+
+                await asyncio.sleep(0.1)
+            else:
+                await asyncio.sleep(0.1)
 
     async def receive_messages(self, websocket):
         async for message in websocket:
             data = json.loads(message)
-            #print("data: ", data)
 
             if data.get("command") == "start_streaming":
                 print("Start streaming command received")
@@ -193,6 +234,11 @@ class WebSocketCommunication:
             if data.get("command") == "onoff_turntable":
                 # self.on_table True 또는 False 받기
                 self.on_table1 = data.get("onoff")
+
+            # 2024.11.08 증분값에 의한 모션커맨드
+            if data.get("command") == "update_delta":
+                self.vector = data.get("vector")
+                print("vector: ", self.vector)
 
             if data.get("command") == "update_position":
                 self.position1 = data.get("position")
@@ -224,7 +270,6 @@ class WebSocketCommunication:
                     print(f"{tp['id']} - Position: {tp['position']}, Rotation: {tp['rotation']}")
 
                 program.RunProgram()
-
                 #await asyncio.sleep(2)
 
                 while self.robot1.Busy():
@@ -312,13 +357,22 @@ class WebSocketCommunication:
                 if not np.array_equal(current_joints1, self.previous_joints1):
                     # 웹소켓 전송 시간 시작
                     joints_np = np.array(current_joints1)
-                    #print("joints_np: ", joints_np)
 
                     joints_flat = joints_np.flatten()
                     data = joints_flat.tolist()
                     # robot1 에 대한 관절 각도 값
                     data.append('robot1')
                     data.append(reachable1)
+                    # 2024.11.06 추가: tcp 좌표 반영
+                    if self.tcp_pos != None:
+                        print("position of TCP: ", self.tcp_pos)
+                        data.append(self.tcp_pos)
+                    # if (self.position1 != None) and (self.rotation1) != None:
+                    #     new_pose = self.rdkapi_math.cal_local_pose(self.position1, self.rotation1)
+                    #     position_np = np.array(new_pose.Pos())
+                    #     #position_flat = position_np.flatten()
+                    #     print("position_np: ", position_np)
+                    #     data.append(position_np)
 
                     # json 패킷
                     json_data = json.dumps(data)
