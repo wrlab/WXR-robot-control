@@ -123,15 +123,11 @@ class WebSocketCommunication:
             f.write(f"{timestamp},{joints[0]},{joints[1]},{joints[2]}, {joints[3]},{joints[4]},{joints[5]}\n")
 
     def start_server(self):
-        server = websockets.serve(self.handler, self.host, self.port)
-        asyncio.get_event_loop().run_until_complete(server)
-        asyncio.get_event_loop().run_forever()
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        ssl_context.load_cert_chain(certfile="crt/livinglab/selfsigned.crt",
+                                    keyfile="crt/livinglab/selfsigned.key")
+        server = websockets.serve(self.handler, self.host, self.port, ssl=ssl_context)
 
-        # ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        # ssl_context.load_cert_chain(certfile="crt/livinglab/selfsigned.crt",
-        #                             keyfile="crt/livinglab/selfsigned.key")
-        # server = websockets.serve(self.handler, self.host, self.port, ssl=ssl_context)
-        # server = websockets.serve(self.handlerort)
         asyncio.get_event_loop().run_until_complete(server)
         asyncio.get_event_loop().run_forever()
 
@@ -162,25 +158,21 @@ class WebSocketCommunication:
                     current_pose = robot.Pose()
                     new_pose = self.rdkapi_math.cal_local_pose(position, rotation)
 
-                    # print("new_pose:", new_pose.Pos())
-                    # robot.MoveJ(new_pose)
-                    # self.num += 1
-                    # print("MoveJ", self.num)
-                    # self.log_pose(new_pose.Pos())
-                    # self.rdk.setRunMode(RUNMODE_SIMULATE)
-
                     if self.rdkapi_math.pose_dif(current_pose, new_pose) > self.threshold:
                         print("new_pose:",new_pose.Pos())
+
+                        self.rdk.setRunMode(RUNMODE_RUN_ROBOT)
                         robot.MoveJ(new_pose)
+                        self.rdk.setRunMode(RUNMODE_SIMULATE)
+
                         self.num += 1
                         print("MoveJ", self.num)
                         self.log_pose(new_pose.Pos())
                         self.log_joints(robot.Joints().list())
-                        #self.rdk.setRunMode(RUNMODE_SIMULATE)
 
-                await asyncio.sleep(0.001)
+                await asyncio.sleep(0.05)
             else:
-                await asyncio.sleep(0.001)
+                await asyncio.sleep(0.05)
 
     async def receive_messages(self, websocket):
         async for message in websocket:

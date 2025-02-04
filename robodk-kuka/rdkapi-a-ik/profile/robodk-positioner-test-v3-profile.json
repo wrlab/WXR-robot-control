@@ -1,0 +1,14 @@
+{
+    "robots": [
+        {
+            "name": "KUKA KR 70 R2100-Meltio",
+            "tool": "R7",
+            "reference": "KP2-HV500",
+            "ext_tool": "KUKA KP2-HV500"
+        }
+    ],
+    "linear_speed": 10,
+    "angular_speed": 180,
+    "joints_speed": 5,
+    "joints_accel": 40
+}

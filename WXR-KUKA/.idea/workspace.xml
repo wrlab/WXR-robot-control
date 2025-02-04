@@ -5,8 +5,191 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e5b1b1df-57c6-4d94-8053-e6268aed3653" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/wxr2kuka-control/rdk2kuka.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a-1/README" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a-1/config.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a-1/rdkapi_math.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a-1/rdkapi_server.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a-1/rdkapi_task.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a-real/README" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a-real/config.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a-real/rdkapi_math.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a-real/rdkapi_server.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a-real/rdkapi_wxr2kuka.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_37.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_38.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_39.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_40.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_41.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_42.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_43.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_44.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_45.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_46.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_47.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_48.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_49.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_50.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_51.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_52.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_53.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_54.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_55.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_56.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_57.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_58.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_59.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_60.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_61.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_62.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_63.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_64.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_65.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_66.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_67.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_68.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_69.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_70.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_71.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_72.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_73.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_74.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_75.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_76.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_77.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_78.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_79.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/pose_log_80.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_37.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_38.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_39.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_40.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_41.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_42.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_43.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_44.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_45.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_46.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_47.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_48.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_49.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_50.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_51.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_52.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_53.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_54.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_55.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_56.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_57.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_58.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_59.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_60.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_61.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_62.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_63.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_64.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_65.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_66.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_67.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_68.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_69.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_70.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_71.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_72.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_73.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_74.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_75.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_76.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_77.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_78.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_79.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/points-plusfield/total_pose_log_80.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/kuka2robodk-api/rdk_config_v4.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/kuka2robodk-api/rdk_config_v4.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/kuka2robodk-api/rdk_kuka_server_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/kuka2robodk-api/rdk_kuka_server_api.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/kuka2robodk-api/rdk_webSocket_v2.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/kuka2robodk-api/rdk_webSocket_v2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/multi-robot-legacy/rdk_config_v4.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/multi-robot-legacy/rdk_config_v4.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/multi-robot-legacy/rdk_webSocket_multi.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/multi-robot-legacy/rdk_webSocket_multi.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/multi-robot-legacy/rdk_wxr_server_multi.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/multi-robot-legacy/rdk_wxr_server_multi.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/multi_robots/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/multi_robots/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/multi_robots/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/multi_robots/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/multi_robots/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/multi_robots/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/multi_robots/.idea/multi_robots.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/multi_robots/.idea/multi_robots.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/multi_robots/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/multi_robots/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/multi_robots/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/multi_robots/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/multi_robots/README.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/multi_robots/README.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/multi_robots/rdk_config_v4.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/multi_robots/rdk_config_v4.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/multi_robots/rdk_webSocket_multi.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/multi_robots/rdk_webSocket_multi.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/multi_robots/rdk_wxr_server_multi.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/multi_robots/rdk_wxr_server_multi.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/multi_robots/testControls.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/multi_robots/testControls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdk2kuka-control/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdk2kuka-control/.idea/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdk2kuka-control/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdk2kuka-control/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdk2kuka-control/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdk2kuka-control/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdk2kuka-control/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdk2kuka-control/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdk2kuka-control/.idea/rdk2kuka-control.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdk2kuka-control/.idea/rdk2kuka-control.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdk2kuka-control/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdk2kuka-control/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdk2kuka-control/rdk2kuka_control.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdk2kuka-control/rdk2kuka_control.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdk2kuka-control/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdk2kuka-control/test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdk2kuka-customDriver/proxyClient.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/rdk2kuka-customDriver/proxyClient.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/rdkapi_math.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/rdkapi_math.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/rdkapi_wxr2kuka.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/rdkapi_wxr2kuka.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/test-log.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/rdkapi-a/test-log.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/joints/joints_log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/joints/joints_log.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/joints/joints_log_1.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/joints/joints_log_1.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/joints/joints_log_2.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/joints/joints_log_2.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/joints/joints_log_3.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/joints/joints_log_3.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/joints/joints_log_4.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/joints/joints_log_4.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/joints/joints_log_5.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/joints/joints_log_5.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/joints/joints_log_6.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/joints/joints_log_6.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/joints/joints_log_7.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/joints/joints_log_7.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/joints/joints_log_8.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/joints/joints_log_8.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/joints/joints_log_9.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/joints/joints_log_9.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/points/pose_log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/points/pose_log.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/points/pose_log_1.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/points/pose_log_1.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/points/pose_log_10.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/points/pose_log_10.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/points/pose_log_2.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/points/pose_log_2.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/points/pose_log_3.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/points/pose_log_3.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/points/pose_log_4.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/points/pose_log_4.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/points/pose_log_5.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/points/pose_log_5.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/points/pose_log_6.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/points/pose_log_6.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/points/pose_log_7.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/points/pose_log_7.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/points/pose_log_8.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/points/pose_log_8.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/points/pose_log_9.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/points/pose_log_9.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/points/total_pose_log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/points/total_pose_log.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/points/total_pose_log_1.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/points/total_pose_log_1.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/points/total_pose_log_10.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/points/total_pose_log_10.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/points/total_pose_log_2.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/points/total_pose_log_2.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/points/total_pose_log_3.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/points/total_pose_log_3.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/points/total_pose_log_4.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/points/total_pose_log_4.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/points/total_pose_log_5.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/points/total_pose_log_5.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/points/total_pose_log_6.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/points/total_pose_log_6.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/points/total_pose_log_7.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/points/total_pose_log_7.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/points/total_pose_log_8.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/points/total_pose_log_8.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/points/total_pose_log_9.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/points/total_pose_log_9.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/rdkapi_math.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/rdkapi_math.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/rdkapi_server.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/rdkapi_server.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/rdkapi-delta/rdkapi_wxr2kuka_delta.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/rdkapi-delta/rdkapi_wxr2kuka_delta.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/vector-control/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/vector-control/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/vector-control/rdk_webSocket_vector.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/vector-control/rdk_webSocket_vector.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/vector-control/rdk_wxr_server_vector.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/vector-control/rdk_wxr_server_vector.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/wxr2kuka-control/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/wxr2kuka-control/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/wxr2kuka-control/rdk2kuka.py" beforeDir="false" afterPath="$PROJECT_DIR$/../local-proxy/local-proxy-server.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/wxr2kuka-control/rdk_webSocket_init.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/wxr2kuka-control/rdk_webSocket_init.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/wxr2kuka-control/wxr_rdk_kuka.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/wxr2kuka-control/wxr_rdk_kuka.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/wxr2rdk-smooth-motion-offline/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/wxr2rdk-smooth-motion-offline/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/wxr2rdk-smooth-motion-offline/rdk_webSocket_smooth_offline.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/wxr2rdk-smooth-motion-offline/rdk_webSocket_smooth_offline.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/wxr2rdk-smooth-motion-offline/rdk_wxr_server_smooth-offline.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/wxr2rdk-smooth-motion-offline/rdk_wxr_server_smooth-offline.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/wxr2rdk-smooth-motion-offline/selfsigned.crt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/wxr2rdk-smooth-motion-offline/selfsigned.crt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/wxr2rdk-smooth-motion-offline/selfsigned.key" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/wxr2rdk-smooth-motion-offline/selfsigned.key" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/wxr2rdk-smooth-motion/10.0.0.4/selfsigned.crt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/wxr2rdk-smooth-motion/10.0.0.4/selfsigned.crt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/wxr2rdk-smooth-motion/10.0.0.4/selfsigned.key" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/wxr2rdk-smooth-motion/10.0.0.4/selfsigned.key" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/wxr2rdk-smooth-motion/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/wxr2rdk-smooth-motion/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/wxr2rdk-smooth-motion/rdk_webSocket_smooth.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/wxr2rdk-smooth-motion/rdk_webSocket_smooth.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/wxr2rdk-smooth-motion/rdk_wxr_server_smooth.py" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/wxr2rdk-smooth-motion/rdk_wxr_server_smooth.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/wxr2rdk-smooth-motion/selfsigned.crt" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/wxr2rdk-smooth-motion/selfsigned.crt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../robodk-kuka/wxr2rdk-smooth-motion/selfsigned.key" beforeDir="false" afterPath="$PROJECT_DIR$/../robodk-kuka/Archive/2024-12-17/wxr2rdk-smooth-motion/selfsigned.key" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../visualization/3dPoints.py" beforeDir="false" afterPath="$PROJECT_DIR$/../visualization/3dPoints.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

@@ -1,0 +1,20 @@
+{
+    "robots": [
+        {
+            "name": "KUKA KR 70 R2100-shadow",
+            "tool": "shadow Tool",
+            "reference": "Baseline",
+            "ext_tool": "2DOF Turn-table"
+        },
+        {
+            "name": "KUKA KR 70 R2100-ghost",
+            "tool": "ghost Tool",
+            "reference": "KP2-HV500",
+            "ext_tool": "KUKA KP2-HV500"
+        }
+    ],
+    "linear_speed": 10,
+    "angular_speed": 180,
+    "joints_speed": 5,
+    "joints_accel": 40
+}

@@ -145,6 +145,7 @@ class kukaClient:
         return self._move_robot(debug)
 
     def _move_robot(self, debug):
+
         req = self._pack_move_req()
         print("req ready!")
         self._send_req(req)

@@ -13,7 +13,8 @@ def cal_local_pose(position, rotation):
 
 # 로그 파일에서 데이터 로드
 #log_file = "C:/GitProjects/robodk-kuka/rdkapi-a/points/pose_log_26.txt"
-log_file = "C:/GitProjects/robodk-kuka/rdkapi-a/points/total_pose_log_25.txt"
+#log_file = "C:/GitProjects/robodk-kuka/rdkapi-a/points/total_pose_log_25.txt"
+log_file = "points/total_pose_log_25.txt"
 data = pd.read_csv(log_file)
 
 # RoboDK API 초기화
